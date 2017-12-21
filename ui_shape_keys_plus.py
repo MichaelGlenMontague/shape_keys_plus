@@ -19,7 +19,7 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 1, 1),
+    "version" : (1, 1, 2),
     "blender" : (2, 79, 0),
     "location" : "Properties > Data",
     "description" : \
@@ -3122,7 +3122,7 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
             row.active = enable_edit_value
             
             row.prop(
-                data=active_key,
+                data=shape_keys,
                 property='eval_time')
         
         driver = skputils.get_key_driver(shape_keys, active_key)
