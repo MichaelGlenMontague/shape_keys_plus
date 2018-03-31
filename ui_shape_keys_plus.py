@@ -19,7 +19,7 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 1, 2),
+    "version" : (1, 2, 0),
     "blender" : (2, 79, 0),
     "location" : "Properties > Data",
     "description" : \
@@ -77,6 +77,32 @@ class ShapeKeysPlusPreferences(bpy.types.AddonPreferences):
 
 class SKPShapeKeySelection(bpy.types.PropertyGroup):
     value = bpy.props.BoolProperty()
+
+class SKPCustomProperty(bpy.types.PropertyGroup):
+    object_target = \
+        bpy.props.StringProperty(
+            name="Object")
+    
+    bone_target = \
+        bpy.props.StringProperty(
+            name="Bone")
+    
+    auto_driver = \
+        bpy.props.BoolProperty(
+            name="Auto Add Driver",
+            description=\
+                ("Automatically add a basic driver to control the shape "
+                 "key using this custom property (will not override "
+                 "shape key's existing driver)"),
+            default=True)
+    
+    name_prefix = \
+        bpy.props.StringProperty(
+            name="Prefix")
+    
+    name_suffix = \
+        bpy.props.StringProperty(
+            name="Suffix")
 
 class ShapeKeysPlusKeyProperties(bpy.types.PropertyGroup):
     selections = bpy.props.CollectionProperty(type=SKPShapeKeySelection)
@@ -187,7 +213,9 @@ class ShapeKeysPlusSceneProperties(bpy.types.PropertyGroup):
             description="Only show shape keys above this value",
             soft_min = 0.0,
             soft_max = 1.0,
-            default = 0.001)
+            default = 0.001,
+            step=1,
+            precision=3)
     
     filter_active_below = \
         bpy.props.BoolProperty(
@@ -196,6 +224,8 @@ class ShapeKeysPlusSceneProperties(bpy.types.PropertyGroup):
                 ("Only show values lower than the "
                  "threshold instead of higher"),
             default=False)
+    
+    custom_property = bpy.props.PointerProperty(type=SKPCustomProperty)
 
 ########################################################################
 ############################### UTILITY ################################
@@ -223,73 +253,72 @@ class skputils():
     icons_swap_default = 0
     
     icon_pairs_standard = (
-        ('DISCLOSURE_TRI_DOWN', 'DISCLOSURE_TRI_RIGHT', "Outliner"),
-        ('TRIA_DOWN', 'TRIA_RIGHT', "White"),
-        ('DISCLOSURE_TRI_DOWN_VEC', 'DISCLOSURE_TRI_RIGHT_VEC', "Gray"),
-        ('DOWNARROW_HLT', 'RIGHTARROW', "Black")
+        ('DISCLOSURE_TRI_DOWN', 'DISCLOSURE_TRI_RIGHT', "Outliner", 0),
+        ('TRIA_DOWN', 'TRIA_RIGHT', "White", 2),
+        ('DOWNARROW_HLT', 'RIGHTARROW', "Black", 3)
     )
     
     icon_pairs_special = (
-        ('LAYER_ACTIVE', 'LAYER_USED', "Layer"),
-        ('SPACE2', 'SPACE3', "Keyframe"),
-        ('MARKER_HLT', 'MARKER', "Marker"),
-        ('PMARKER_ACT', 'PMARKER', "Diamond"),
-        ('SOLO_ON', 'SOLO_OFF', "Star"),
-        ('RADIOBUT_ON', 'RADIOBUT_OFF', "Bullet"),
-        ('CHECKBOX_HLT', 'CHECKBOX_DEHLT', "Checkbox"),
-        ('DOT', 'LINK', "Dot")
+        ('LAYER_ACTIVE', 'LAYER_USED', "Layer", 4),
+        ('SPACE2', 'SPACE3', "Keyframe", 5),
+        ('MARKER_HLT', 'MARKER', "Marker", 6),
+        ('PMARKER_ACT', 'PMARKER', "Diamond", 7),
+        ('SOLO_ON', 'SOLO_OFF', "Star", 8),
+        ('RADIOBUT_ON', 'RADIOBUT_OFF', "Bullet", 9),
+        ('CHECKBOX_HLT', 'CHECKBOX_DEHLT', "Checkbox", 10),
+        ('DOT', 'LINK', "Dot", 11)
     )
     
     icon_pairs_misc = (
-        ('FILESEL', 'FILE_FOLDER', "Folder"),
-        ('PACKAGE', 'UGLYPACKAGE', "Package"),
-        ('KEY_HLT', 'KEY_DEHLT', "Key"),
-        ('UNPINNED', 'PINNED', "Pin"),
-        ('PROP_ON', 'PROP_OFF', "Proportional"),
-        ('ZOOM_OUT', 'ZOOM_IN', "Magnifier"),
-        ('INLINK', 'LINK', "Donut"),
-        ('LAMP_SUN', 'FREEZE', "Temperature"),
-        ('PARTICLE_DATA', 'MOD_PARTICLES', "Magic"),
-        ('AUTOMERGE_ON', 'AUTOMERGE_OFF', "Merge"),
-        ('UNLOCKED', 'LOCKED', "Lock"),
-        ('SNAP_ON', 'SNAP_OFF', "Magnet"),
-        ('MONKEY', 'MOD_MASK', "Monkey"),
-        ('WORLD', 'MATSPHERE', "World"),
-        ('OBJECT_DATA', 'MESH_CUBE', "Object"),
-        ('NODE_SEL', 'NODE', "Node"),
-        ('NODE_INSERT_OFF', 'NODE_INSERT_ON', "Nodes"),
-        ('SMOOTHCURVE', 'SPHERECURVE', "Squeeze"),
-        ('SHARPCURVE', 'ROOTCURVE', "Pinch"),
-        ('RNDCURVE', 'NOCURVE', "Noise"),
-        ('RESTRICT_VIEW_OFF', 'RESTRICT_VIEW_ON', "Eye"),
-        ('RESTRICT_RENDER_OFF', 'RESTRICT_RENDER_ON', "Camera"),
-        ('RESTRICT_SELECT_OFF', 'RESTRICT_SELECT_ON', "Cursor"),
-        ('OUTLINER_OB_EMPTY', 'OUTLINER_DATA_EMPTY', "Empty"),
-        ('OUTLINER_OB_EMPTY', 'OUTLINER_DATA_EMPTY', "Mesh"),
-        ('OUTLINER_OB_CURVE', 'OUTLINER_DATA_CURVE', "Curve"),
-        ('OUTLINER_OB_LATTICE', 'OUTLINER_DATA_LATTICE', "Lattice"),
-        ('OUTLINER_OB_META', 'BONE_DATA', "Metaball"),
-        ('OUTLINER_OB_LAMP', 'OUTLINER_DATA_LAMP', "Lamp"),
-        ('OUTLINER_OB_CAMERA', 'OUTLINER_DATA_CAMERA', "Film"),
-        ('OUTLINER_OB_ARMATURE', 'ARMATURE_DATA', "Human"),
-        ('MOD_ARMATURE', 'POSE_DATA', "Blueman"),
-        ('POSE_HLT', 'OUTLINER_DATA_POSE', "Truman"),
-        ('OUTLINER_OB_FONT', 'FONT_DATA', "Font"),
-        ('OUTLINER_OB_SURFACE', 'OUTLINER_DATA_SURFACE', "Surface"),
-        ('OUTLINER_OB_SPEAKER', 'OUTLINER_DATA_SPEAKER', "Speaker"),
-        ('PLAY_AUDIO', 'MUTE_IPO_ON', "Mute"),
-        ('COLOR_RED', 'COLOR', "Red"),
-        ('COLOR_GREEN', 'COLOR', "Green"),
-        ('COLOR_BLUE', 'COLOR', "Blue"),
-        ('GHOST_ENABLED', 'GHOST_DISABLED', "Ghost"),
-        ('COLLAPSEMENU', 'GRIP', "Lines"),
-        ('STICKY_UVS_DISABLE', 'GROUP_VERTEX', "Points"),
-        ('STICKY_UVS_VERT', 'STICKY_UVS_LOC', "Pressure"),
-        ('FILE_BLANK', 'FILE_HIDDEN', "Paper"),
-        ('LIBRARY_DATA_DIRECT', 'LIBRARY_DATA_INDIRECT', "Direct"),
-        ('SYNTAX_ON', 'SYNTAX_OFF', "Alpha"),
-        ('UNLINKED', 'LINKED', "Link"),
-        ('CONSTRAINT_DATA', 'CONSTRAINT', "Chain")
+        ('FILESEL', 'FILE_FOLDER', "Folder", 12),
+        ('PACKAGE', 'UGLYPACKAGE', "Package", 13),
+        ('KEY_HLT', 'KEY_DEHLT', "Key", 14),
+        ('UNPINNED', 'PINNED', "Pin", 15),
+        ('PROP_ON', 'PROP_OFF', "Proportional", 16),
+        ('ZOOM_OUT', 'ZOOM_IN', "Magnifier", 17),
+        ('INLINK', 'LINK', "Donut", 18),
+        ('LAMP_SUN', 'FREEZE', "Temperature", 19),
+        ('PARTICLE_DATA', 'MOD_PARTICLES', "Magic", 20),
+        ('AUTOMERGE_ON', 'AUTOMERGE_OFF', "Merge", 21),
+        ('UNLOCKED', 'LOCKED', "Lock", 22),
+        ('SNAP_ON', 'SNAP_OFF', "Magnet", 23),
+        ('MONKEY', 'MOD_MASK', "Monkey", 24),
+        ('WORLD', 'MATSPHERE', "World", 25),
+        ('OBJECT_DATA', 'MESH_CUBE', "Object", 26),
+        ('NODE_SEL', 'NODE', "Node", 27),
+        ('NODE_INSERT_OFF', 'NODE_INSERT_ON', "Nodes", 28),
+        ('SMOOTHCURVE', 'SPHERECURVE', "Squeeze", 29),
+        ('SHARPCURVE', 'ROOTCURVE', "Pinch", 30),
+        ('RNDCURVE', 'NOCURVE', "Noise", 31),
+        ('RESTRICT_VIEW_OFF', 'RESTRICT_VIEW_ON', "Eye", 32),
+        ('RESTRICT_RENDER_OFF', 'RESTRICT_RENDER_ON', "Camera", 33),
+        ('RESTRICT_SELECT_OFF', 'RESTRICT_SELECT_ON', "Cursor", 34),
+        ('OUTLINER_OB_EMPTY', 'OUTLINER_DATA_EMPTY', "Empty", 35),
+        ('OUTLINER_OB_EMPTY', 'OUTLINER_DATA_EMPTY', "Mesh", 36),
+        ('OUTLINER_OB_CURVE', 'OUTLINER_DATA_CURVE', "Curve", 37),
+        ('OUTLINER_OB_LATTICE', 'OUTLINER_DATA_LATTICE', "Lattice", 38),
+        ('OUTLINER_OB_META', 'BONE_DATA', "Metaball", 39),
+        ('OUTLINER_OB_LAMP', 'OUTLINER_DATA_LAMP', "Lamp", 40),
+        ('OUTLINER_OB_CAMERA', 'OUTLINER_DATA_CAMERA', "Film", 41),
+        ('OUTLINER_OB_ARMATURE', 'ARMATURE_DATA', "Human", 42),
+        ('MOD_ARMATURE', 'POSE_DATA', "Blueman", 43),
+        ('POSE_HLT', 'OUTLINER_DATA_POSE', "Truman", 44),
+        ('OUTLINER_OB_FONT', 'FONT_DATA', "Font", 45),
+        ('OUTLINER_OB_SURFACE', 'OUTLINER_DATA_SURFACE', "Surface", 46),
+        ('OUTLINER_OB_SPEAKER', 'OUTLINER_DATA_SPEAKER', "Speaker", 47),
+        ('PLAY_AUDIO', 'MUTE_IPO_ON', "Mute", 48),
+        ('COLOR_RED', 'COLOR', "Red", 49),
+        ('COLOR_GREEN', 'COLOR', "Green", 50),
+        ('COLOR_BLUE', 'COLOR', "Blue", 51),
+        ('GHOST_ENABLED', 'GHOST_DISABLED', "Ghost", 52),
+        ('COLLAPSEMENU', 'GRIP', "Lines", 53),
+        ('STICKY_UVS_DISABLE', 'GROUP_VERTEX', "Points", 54),
+        ('STICKY_UVS_VERT', 'STICKY_UVS_LOC', "Pressure", 55),
+        ('FILE_BLANK', 'FILE_HIDDEN', "Paper", 56),
+        ('LIBRARY_DATA_DIRECT', 'LIBRARY_DATA_INDIRECT', "Direct", 57),
+        ('SYNTAX_ON', 'SYNTAX_OFF', "Alpha", 58),
+        ('UNLINKED', 'LINKED', "Link", 59),
+        ('CONSTRAINT_DATA', 'CONSTRAINT', "Chain", 60)
     )
     
     icon_pairs = \
@@ -438,6 +467,10 @@ class skputils():
         return key.name in [c.name for c in cls.get_folder_children(folder)]
     
     @classmethod
+    def get_icon_pair(cls, id, d=0):
+        return next((p for p in cls.icon_pairs if p[3] == id), cls.icon_pairs[d])
+    
+    @classmethod
     def get_folder_capacity(cls, folder):
         capacity = 0
         
@@ -472,7 +505,7 @@ class skputils():
         context = bpy.context
         
         if cls.is_key_folder(folder):
-            shape_keys = context.object.data.shape_keys
+            shape_keys = context.active_object.data.shape_keys
             folder_index = shape_keys.key_blocks.find(folder.name)
             index = folder_index + 1
             capacity = cls.get_folder_capacity(folder)
@@ -488,7 +521,7 @@ class skputils():
         context = bpy.context
         
         if key:
-            shape_keys = context.object.data.shape_keys
+            shape_keys = context.active_object.data.shape_keys
             index = cls.get_key_index(key)
             i = index - 1
             
@@ -507,12 +540,12 @@ class skputils():
     
     @classmethod
     def get_key_parents(cls, key):
-        parents = []
-        
         context = bpy.context
         
+        parents = []
+        
         if key:
-            shape_keys = context.object.data.shape_keys
+            shape_keys = context.active_object.data.shape_keys
             index = cls.get_key_index(key)
             i = index - 1
             
@@ -539,7 +572,7 @@ class skputils():
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         
-        if active_key:
+        if shape_keys and shape_keys.key_blocks:
             return shape_keys.key_blocks.find(key.name)
         
         return -1
@@ -553,7 +586,7 @@ class skputils():
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         parents = cls.get_key_parents(key)
-        parent = parents[0] if parents else None
+        parent = get(parents, 0)
         index = cls.get_key_index(key)
         capacity = cls.get_folder_capacity(key)
         
@@ -791,6 +824,25 @@ class skputils():
         return str(index) in shape_keys.shape_keys_plus.selections
     
     @classmethod
+    def selected_shape_key_indices(cls):
+        context = bpy.context
+        obj = context.active_object
+        shape_keys = obj.data.shape_keys
+        
+        indices = []
+        
+        if not shape_keys:
+            return indices
+        
+        selections = shape_keys.shape_keys_plus.selections
+        
+        for i, x in enumerate(selections):
+            if x.name.isdigit():
+                indices.append(int(x.name))
+        
+        return sorted(indices)
+    
+    @classmethod
     def selected_shape_keys(cls):
         context = bpy.context
         obj = context.active_object
@@ -801,14 +853,10 @@ class skputils():
         if not shape_keys:
             return keys
         
-        selections = shape_keys.shape_keys_plus.selections
+        indices = cls.selected_shape_key_indices()
         
-        for i, x in enumerate(selections):
-            if x.name.isdigit():
-                key = get(shape_keys.key_blocks, int(x.name), None)
-                
-                if key:
-                    keys.append(key)
+        for index in indices:
+            keys.append(shape_keys.key_blocks[index])
         
         return keys
     
@@ -1211,9 +1259,14 @@ def metadata(data, key):
     return m
 
 def get(l, i, d=None):
+    """Returns the value of l[i] if possible, otherwise d"""
+    
+    if type(l) in (dict, set):
+        return l[i] if i in l else d
+    
     try:
         return l[i]
-    except (IndexError, TypeError):
+    except (IndexError, KeyError, TypeError):
         return d
 
 def shape_key_parent(key, parent):
@@ -1255,6 +1308,9 @@ def shape_key_parent(key, parent):
 def shape_key_unparent(key, clear=False):
     parents = skputils.get_key_parents(key)
     children = skputils.get_folder_children(key)
+    
+    if not parents:
+        return
     
     first_parent = parents[0]
     second_parent = get(parents, 1, None)
@@ -1385,6 +1441,7 @@ def shape_key_add(type='DEFAULT'):
                 
                 # apply_add_placement won't work properly if
                 # the shape key parenting placement is 'TOP'
+                # <<< temporary fix
                 old_placement = skp.shape_key_parent_placement
                 skp.shape_key_parent_placement = 'BOTTOM'
                 
@@ -1399,29 +1456,28 @@ def shape_key_add(type='DEFAULT'):
     
     return new_key
 
-def shape_key_remove(type='DEFAULT'):
+def shape_key_remove(type='DEFAULT', index=-1):
     context = bpy.context
     skp = context.scene.shape_keys_plus
     obj = context.active_object
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
-    active_index = obj.active_shape_key_index
-    active_key = obj.active_shape_key
     
-    shape_keys.shape_keys_plus.selections.clear()
+    if index == -1:
+        active_index = obj.active_shape_key_index
+    else:
+        active_index = index
     
+    active_key = key_blocks[active_index]
     basis_key = shape_keys.reference_key
     
     previous_index = active_index - 1
-    previous_key = \
-        key_blocks[previous_index] if previous_index >= 0 else None
+    previous_key = key_blocks[previous_index] if previous_index >= 0 else None
     
     next_index = active_index + 1
-    next_key = \
-        key_blocks[next_index] if next_index < len(key_blocks) else None
+    next_key = key_blocks[next_index] if next_index < len(key_blocks) else None
     
-    active_key_parent = \
-        skputils.get_key_parent(active_key)
+    active_key_parent = skputils.get_key_parent(active_key)
     
     previous_key_parent = \
         skputils.get_key_parent(previous_key) if previous_key else None
@@ -1435,7 +1491,7 @@ def shape_key_remove(type='DEFAULT'):
     active_children = skputils.get_folder_children(active_key)
     active_capacity = len(active_children)
     
-    if type == 'ALL':
+    if type == 'CLEAR':
         bpy.ops.object.shape_key_remove(all=True)
     elif type == 'DEFAULT':
         obj.active_shape_key_index = active_index
@@ -1456,6 +1512,37 @@ def shape_key_remove(type='DEFAULT'):
             obj.active_shape_key_index = skputils.get_key_index(siblings[0])
         elif siblings[1]:
             obj.active_shape_key_index = skputils.get_key_index(siblings[1])
+    elif type == 'DEFAULT_SELECTED':
+        selections = skputils.selected_shape_keys()
+        keys = []
+        
+        removing_active = False
+        
+        # search for keys by name and remove them
+        for key in selections:
+            if key != active_key:
+                keys.append(key)
+        
+        # remove the active key last so that the active index
+        # automatically corrects itself
+        if skputils.shape_key_selected(active_index):
+            removing_active = True
+            keys.append(active_key)
+        
+        for key in keys:
+            obj.active_shape_key_index = skputils.get_key_index(key)
+            
+            key_parent = skputils.get_key_parent(key)
+            
+            bpy.ops.object.shape_key_remove()
+            
+            if key_parent:
+                skputils.shift_folder_children_value(key_parent, -1)
+        
+        if not removing_active:
+            obj.active_shape_key_index = skputils.get_key_index(active_key)
+    
+    shape_keys.shape_keys_plus.selections.clear()
 
 def shape_key_move(type, index=-1):
     context = bpy.context
@@ -1464,8 +1551,6 @@ def shape_key_move(type, index=-1):
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
     data = skp_data()
-    
-    shape_keys.shape_keys_plus.selections.clear()
     
     if index == -1:
         index = obj.active_shape_key_index
@@ -1606,7 +1691,6 @@ def shape_key_move(type, index=-1):
             # common parent index   = 4 - (2 + 1) = 1
             # common parent         = parents[1]
             common_parent_index = folder_stack - (active_stack + 1)
-            
             parent = next_folder_metadata.parents[common_parent_index]
             
             # update the folder to skip over a lower-level parent
@@ -1626,22 +1710,22 @@ def shape_key_move(type, index=-1):
     
     if is_active_only_child():
         # the key can't be moved if it's the
-        # only key in its local hierarchy
+        # only key in its local space
         pass
     elif type == 'TOP':
         # move the active key to the top of the
-        # specified folder's hierarchy, or the
-        # global hierarchy if no folder exists
+        # specified folder's space, or the
+        # global space if no folder exists
         move_to_top(parent_metadata)
     elif type == 'BOTTOM':
         # move the active key to the bottom of the
-        # specified folder's hierarchy, or the
-        # global hierarchy if no folder exists
+        # specified folder's space, or the
+        # global space if no folder exists
         move_to_bottom(parent_metadata)
     elif is_active_first_child():
         if type == 'UP':
             # if the active key is the first child
-            # in its hierarchy, moving up will cause
+            # in its space, moving up will cause
             # it to loop back around to the bottom
             move_to_bottom(parent_metadata)
         elif type == 'DOWN':
@@ -1653,22 +1737,22 @@ def shape_key_move(type, index=-1):
         if type == 'UP':
             if is_next_last_child():
                 # if moving up while the above key is
-                # the last child of another hierarchy,
-                # skip over that entire hierarchy
+                # the last child of another space,
+                # skip over that entire space
                 skip_over_folder(next_parent_metadata)
             else:
                 move(index, 'UP')
         elif type == 'DOWN':
             # if the active key is the last child
-            # in its hierarchy, moving down will cause
+            # in its space, moving down will cause
             # it to loop back around to the top
             move_to_top(parent_metadata)
     else:
         if type == 'UP':
             if is_next_last_child():
                 # if moving up while the above key is
-                # the last child in another hierarchy,
-                # skip over that entire hierarchy
+                # the last child in another space,
+                # skip over that entire space
                 skip_over_folder(next_parent_metadata)
             else:
                 move(index, 'UP')
@@ -1677,6 +1761,36 @@ def shape_key_move(type, index=-1):
                 skip_over_folder(next_metadata)
             else:
                 move(index, 'DOWN')
+
+def shape_key_select(i, v):
+    context = bpy.context
+    skp = context.scene.shape_keys_plus
+    obj = context.active_object
+    shape_keys = obj.data.shape_keys
+    key_blocks = shape_keys.key_blocks
+    selections = shape_keys.shape_keys_plus.selections
+    
+    if type(i) == bpy.types.ShapeKey:
+        key = i
+        i = skputils.get_key_index(key)
+    elif type(i) == str:
+        key = key_blocks[i]
+        i = skputils.get_key_index(key)
+    elif type(i) == int:
+        key = key_blocks[i]
+    
+    valid = i > 0 and not skputils.is_key_folder(key)
+    
+    if not valid:
+        return
+    
+    i = str(i)
+    
+    if v == True:
+        get(selections, i, selections.add()).name = i
+    elif v == False:
+        while i in selections:
+            selections.remove(selections.find(i))
 
 def shape_key_copy(type='DEFAULT'):
     context = bpy.context
@@ -1688,6 +1802,7 @@ def shape_key_copy(type='DEFAULT'):
     
     active_key = obj.active_shape_key
     active_index = obj.active_shape_key_index
+    active_name = active_key.name
     active_parent = skputils.get_key_parent(active_key)
     active_children = skputils.get_folder_children(active_key)
     
@@ -1749,8 +1864,8 @@ def shape_key_copy(type='DEFAULT'):
         # select the new key, which was sent to the bottom
         obj.active_shape_key_index = len(key_blocks) - 1
         
-        if type in ('MIRROR', 'MIRROR_TOPOLOGY'):
-            use_topology = type == 'MIRROR_TOPOLOGY'
+        if 'MIRROR' in type:
+            use_topology = 'TOPOLOGY' in type
             
             bpy.ops.object.shape_key_mirror(use_topology=use_topology)
             
@@ -1787,34 +1902,61 @@ def shape_key_copy(type='DEFAULT'):
         
         return new_key
     
-    copy_key = copy(active_key)
-    copy_children = []
-    
-    for c in active_children:
-        copy_children.append(copy(c))
-    
-    auto_parent = skp.shape_key_auto_parent and active_parent
-    
-    if not auto_parent:
-        old_stack = skputils.get_folder_stack_value(copy_key)
+    if 'SELECTED' in type:
+        selections = [key.name for key in skputils.selected_shape_keys()]
+        copies = []
         
-        skputils.set_folder_stack_value(copy_key, 1)
+        shape_keys.shape_keys_plus.selections.clear()
         
-        for c in copy_children:
-            if not skputils.is_key_folder(c):
-                continue
+        for name in selections:
+            key = key_blocks[name]
+            copy_key = copy(key)
             
-            stack_offset = \
-                skputils.get_folder_stack_value(c) - old_stack
+            key_parent = skputils.get_key_parent(key)
+            auto_parent = skp.shape_key_auto_parent and key_parent
             
-            skputils.set_folder_stack_value(c, 1 + stack_offset)
-    
-    skputils.apply_copy_placement(copy_key, active_key)
-    
-    if auto_parent:
-        skputils.shift_folder_children_value(active_parent, 1)
-    
-    obj.active_shape_key_index = skputils.get_key_index(copy_key)
+            skputils.apply_copy_placement(copy_key, key)
+            
+            if auto_parent:
+                skputils.shift_folder_children_value(key_parent, 1)
+            
+            copies.append(copy_key)
+        
+        for key in copies:
+            shape_key_select(key, True)
+        
+        obj.active_shape_key_index = \
+            skputils.get_key_index(key_blocks[active_name])
+    else:
+        copy_key = copy(active_key)
+        copy_children = []
+        
+        for c in active_children:
+            copy_children.append(copy(c))
+        
+        auto_parent = skp.shape_key_auto_parent and active_parent
+        
+        if not auto_parent:
+            old_stack = skputils.get_folder_stack_value(copy_key)
+            
+            skputils.set_folder_stack_value(copy_key, 1)
+            
+            for c in copy_children:
+                if not skputils.is_key_folder(c):
+                    continue
+                
+                stack_offset = skputils.get_folder_stack_value(c) - old_stack
+                
+                skputils.set_folder_stack_value(c, 1 + stack_offset)
+        
+        skputils.apply_copy_placement(copy_key, active_key)
+        
+        if auto_parent:
+            skputils.shift_folder_children_value(active_parent, 1)
+        
+        obj.active_shape_key_index = skputils.get_key_index(copy_key)
+        
+        shape_keys.shape_keys_plus.selections.clear()
 
 ########################################################################
 ################################# MENUS ################################
@@ -1824,6 +1966,43 @@ class MESH_MT_skp_shape_key_add_specials(bpy.types.Menu):
     bl_label = "Shape Key Add Specials"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
+        layout = self.layout
+        
+        if selections:
+            row = layout.row()
+            
+            row.menu(
+                menu='MESH_MT_skp_shape_key_add_specials_selected',
+                text='Selected (' + str(len(selections)) + ')',
+                icon='FILE_TICK')
+        
+        row = layout.row()
+        row.enabled = not selections
+        
+        op = row.operator(
+            operator='object.skp_shape_key_add',
+            icon='FILE_TEXT',
+            text="New Shape From Mix")
+        
+        op.type = 'FROM_MIX'
+        
+        row = layout.row()
+        
+        row.enabled = not selections
+        
+        op = row.operator(
+            operator='object.skp_shape_key_add',
+            icon='NEWFOLDER',
+            text="New Folder")
+        
+        op.type = 'FOLDER'
+
+class MESH_MT_skp_shape_key_add_specials_selected(bpy.types.Menu):
+    bl_label = "Shape Key Add Specials (Selected)"
+    
+    def draw(self, context):
         layout = self.layout
         
         op = layout.operator(
@@ -1831,108 +2010,181 @@ class MESH_MT_skp_shape_key_add_specials(bpy.types.Menu):
             icon='FILE_TEXT',
             text="New Shape From Mix")
         
-        op.type = 'FROM_MIX'
-        
-        if skputils.selected_shape_keys():
-            op = layout.operator(
-                operator='object.skp_shape_key_add',
-                icon='SAVE_COPY',
-                text="New Shape From Mix (Selected)")
-            
-            op.type = 'FROM_MIX_SELECTED'
-        
-        op = layout.operator(
-            operator='object.skp_shape_key_add',
-            icon='NEWFOLDER',
-            text="New Folder")
-        
-        op.type = 'FOLDER'
+        op.type = 'FROM_MIX_SELECTED'
 
 class MESH_MT_skp_shape_key_copy_specials(bpy.types.Menu):
     bl_label = "Shape Key Copy Specials"
+    
+    def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
+        layout = self.layout
+        
+        if selections:
+            row = layout.row()
+            
+            row.menu(
+                menu='MESH_MT_skp_shape_key_copy_specials_selected',
+                text='Selected (' + str(len(selections)) + ')',
+                icon='FILE_TICK')
+        
+        row = layout.row()
+        row.enabled = not selections
+        
+        op = row.operator(
+            operator='object.skp_shape_key_copy',
+            icon='PASTEFLIPDOWN',
+            text="Copy Shape Key, Mirrored")
+        
+        op.type = 'MIRROR'
+        
+        row = layout.row()
+        row.enabled = not selections
+        
+        op = row.operator(
+            operator='object.skp_shape_key_copy',
+            icon='PASTEFLIPDOWN',
+            text="Copy Shape Key, Mirrored (Topology)")
+        
+        op.type = 'MIRROR_TOPOLOGY'
+
+class MESH_MT_skp_shape_key_copy_specials_selected(bpy.types.Menu):
+    bl_label = "Shape Key Copy Specials (Selected)"
     
     def draw(self, context):
         layout = self.layout
         
         op = layout.operator(
             operator='object.skp_shape_key_copy',
-            icon='PASTEFLIPDOWN',
-            text="Copy Shape Mirrored")
+            icon='PASTEDOWN',
+            text="Copy Shape Key")
         
-        op.type = 'MIRROR'
+        op.type = 'DEFAULT_SELECTED'
         
         op = layout.operator(
             operator='object.skp_shape_key_copy',
             icon='PASTEFLIPDOWN',
-            text="Copy Shape Mirrored (Topology)")
+            text="Copy Shape Key, Mirrored")
         
-        op.type = 'MIRROR_TOPOLOGY'
+        op.type = 'MIRROR_SELECTED'
+        
+        op = layout.operator(
+            operator='object.skp_shape_key_copy',
+            icon='PASTEFLIPDOWN',
+            text="Copy Shape Key, Mirrored (Topology)")
+        
+        op.type = 'MIRROR_TOPOLOGY_SELECTED'
 
 class MESH_MT_skp_shape_key_remove_specials(bpy.types.Menu):
     bl_label = "Shape Key Removal Specials"
+    
+    def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
+        layout = self.layout
+        
+        if selections:
+            row = layout.row()
+            
+            row.menu(
+                menu='MESH_MT_skp_shape_key_remove_specials_selected',
+                text='Selected (' + str(len(selections)) + ')',
+                icon='FILE_TICK')
+        
+        row = layout.row()
+        row.enabled = not selections
+        
+        op = row.operator(
+            operator='object.skp_shape_key_remove',
+            icon='CANCEL',
+            text="Clear Shape Keys")
+        
+        op.type = 'CLEAR'
+
+class MESH_MT_skp_shape_key_remove_specials_selected(bpy.types.Menu):
+    bl_label = "Shape Key Removal Specials (Selected)"
     
     def draw(self, context):
         layout = self.layout
         
         op = layout.operator(
             operator='object.skp_shape_key_remove',
-            icon='CANCEL',
-            text="Delete All Shapes")
+            icon='ZOOMOUT',
+            text="Remove Shape Key")
         
-        op.type = 'ALL'
+        op.type = 'DEFAULT_SELECTED'
 
 class MESH_MT_skp_shape_key_other_specials(bpy.types.Menu):
     bl_label = "Other Shape Key Specials"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
         layout = self.layout
+        
+        if selections:
+            row = layout.row()
+            
+            row.menu(
+                menu='MESH_MT_skp_shape_key_other_specials_selected',
+                text='Selected (' + str(len(selections)) + ')',
+                icon='FILE_TICK')
         
         obj = context.active_object
         active_key = obj.active_shape_key
         is_active_folder = active_key and skputils.is_key_folder(active_key)
         
-        selected_shape_keys = skputils.selected_shape_keys()
-        
         if active_key:
-            layout.menu(
+            row = layout.row()
+            row.enabled = not selections
+            
+            row.menu(
                 menu='OBJECT_MT_skp_shape_key_parent',
                 icon='FILE_PARENT')
         
+        row = layout.row()
+        row.enabled = not selections
+        
         if is_active_folder:
-            layout.menu(
+            row.menu(
                 menu='OBJECT_MT_skp_folder_icon',
                 icon='COLOR')
         else:
-            layout.menu(
+            row.menu(
                 menu='OBJECT_MT_skp_folder_icon',
                 icon='COLOR',
                 text="Set Default Folder Icon to")
         
-        '''
-        if selected_shape_keys:
-            layout.operator(
-                operator='OBJECT_OT_skp_custom_properties_from_selected',
-                icon='FILE_TICK')
-        '''
+        row = layout.row()
+        row.enabled = not selections
         
-        op = layout.operator(
+        op = row.operator(
             operator='object.shape_key_mirror',
             icon='ARROW_LEFTRIGHT')
         
         op.use_topology = False
         
-        op = layout.operator(
+        row = layout.row()
+        row.enabled = not selections
+        
+        op = row.operator(
             operator='object.shape_key_mirror',
             text="Mirror Shape Key (Topology)",
             icon='ARROW_LEFTRIGHT')
         
         op.use_topology = True
         
-        layout.operator(
+        row = layout.row()
+        row.enabled = not selections
+        
+        row.operator(
             operator='object.shape_key_transfer',
             icon='COPY_ID')
         
-        layout.operator(
+        row = layout.row()
+        row.enabled = not selections
+        
+        row.operator(
             operator='object.join_shapes',
             icon='COPY_ID')
         
@@ -1951,11 +2203,27 @@ class MESH_MT_skp_shape_key_other_specials(bpy.types.Menu):
                     icon='ERROR')
         '''
 
+class MESH_MT_skp_shape_key_other_specials_selected(bpy.types.Menu):
+    bl_label = "Other Shape Key Specials (Selected)"
+    
+    def draw(self, context):
+        layout = self.layout
+        
+        layout.menu(
+            menu='OBJECT_MT_skp_shape_key_parent_selected',
+            text='Set Parent to',
+            icon='FILE_PARENT')
+
 class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):
     bl_label = "Set Parent to"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
         layout = self.layout
+        
+        if selections:
+            layout.enabled = False
         
         obj = context.active_object
         shape_keys = obj.data.shape_keys
@@ -1963,7 +2231,6 @@ class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):
         
         if active_key:
             key_blocks = shape_keys.key_blocks
-            has_folder = False
             parents = skputils.get_key_parents(active_key)
             parent = get(parents, 0, None)
             
@@ -1992,7 +2259,7 @@ class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):
                 
                 op = layout.operator(
                     operator='object.skp_shape_key_parent',
-                    text="Remove from " + parent.name,
+                    text="Unparent from " + parent.name,
                     icon='X')
                 
                 op.type = 'UNPARENT'
@@ -2018,8 +2285,6 @@ class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):
                     not is_child
                 
                 if valid:
-                    has_folder = True
-                    
                     op = layout.operator(
                         operator='object.skp_shape_key_parent',
                         text=("  " * len(key_parents)) + key.name,
@@ -2029,11 +2294,63 @@ class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):
                     op.child = active_key.name
                     op.parent = key.name
 
+class OBJECT_MT_skp_shape_key_parent_selected(bpy.types.Menu):
+    bl_label = "Set Parent to (Selected)"
+    
+    def draw(self, context):
+        layout = self.layout
+        
+        obj = context.active_object
+        shape_keys = obj.data.shape_keys
+        active_key = obj.active_shape_key
+        
+        if active_key:
+            key_blocks = shape_keys.key_blocks
+            
+            op = layout.operator(
+                operator='object.skp_shape_key_parent',
+                text='New Folder',
+                icon='NEWFOLDER')
+            
+            op.type = 'NEW_SELECTED'
+            
+            op = layout.operator(
+                operator='object.skp_shape_key_parent',
+                text="Clear Parents",
+                icon='CANCEL')
+            
+            op.type = 'CLEAR_SELECTED'
+                
+            op = layout.operator(
+                operator='object.skp_shape_key_parent',
+                text="Unparent",
+                icon='X')
+            
+            op.type = 'UNPARENT_SELECTED'
+            
+            for key in key_blocks:
+                is_folder = skputils.is_key_folder(key)
+                key_parents = skputils.get_key_parents(key)
+                
+                if is_folder:
+                    op = layout.operator(
+                        operator='object.skp_shape_key_parent',
+                        text=("  " * len(key_parents)) + key.name,
+                        icon='FILE_FOLDER')
+                    
+                    op.type = 'PARENT_SELECTED'
+                    op.parent = key.name
+
 class OBJECT_MT_skp_folder_icon(bpy.types.Menu):
     bl_label = "Set Folder Icon to"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
         layout = self.layout
+        
+        if selections:
+            layout.enabled = False
         
         skp = context.scene.shape_keys_plus
         obj = context.active_object
@@ -2044,7 +2361,7 @@ class OBJECT_MT_skp_folder_icon(bpy.types.Menu):
         icons_default = skp.folder_icon_pair
         icons_default_swap = skp.folder_icon_swap
         
-        icon_default_pair = skputils.icon_pairs[icons_default]
+        icon_default_pair = skputils.get_icon_pair(icons_default)
         icon_default = icon_default_pair[int(icons_default_swap)]
         icon_default_swap = icon_default_pair[int(not icons_default_swap)]
         
@@ -2057,7 +2374,7 @@ class OBJECT_MT_skp_folder_icon(bpy.types.Menu):
                 active_key.vertex_group,
                 skputils.icons_swap) == 1
             
-            icon_active_pair = skputils.icon_pairs[icons_block]
+            icon_active_pair = skputils.get_icon_pair(icons_block)
             icon_active = icon_active_pair[int(icons_swap_block)]
             icon_active_swap = icon_active_pair[not int(icons_swap_block)]
             
@@ -2103,7 +2420,12 @@ class OBJECT_MT_skp_folder_icons_standard(bpy.types.Menu):
     bl_label = "Set Folder Icon to"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
         layout = self.layout
+        
+        if selections:
+            layout.enabled = False
         
         skp = context.scene.shape_keys_plus
         obj = context.active_object
@@ -2117,7 +2439,7 @@ class OBJECT_MT_skp_folder_icons_standard(bpy.types.Menu):
                 icon=p[0],
                 text=p[2])
             
-            op.icons = skputils.icon_pairs.index(p)
+            op.icons = p[3]
             op.swap = False
             op.set_as_default = not is_active_folder
             
@@ -2129,7 +2451,12 @@ class OBJECT_MT_skp_folder_icons_special(bpy.types.Menu):
     bl_label = "Set Folder Icon to"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
         layout = self.layout
+        
+        if selections:
+            layout.enabled = False
         
         skp = context.scene.shape_keys_plus
         obj = context.active_object
@@ -2143,7 +2470,7 @@ class OBJECT_MT_skp_folder_icons_special(bpy.types.Menu):
                 icon=p[0],
                 text=p[2])
             
-            op.icons = skputils.icon_pairs.index(p)
+            op.icons = p[3]
             op.swap = False
             op.set_as_default = not is_active_folder
             
@@ -2155,7 +2482,12 @@ class OBJECT_MT_skp_folder_icons_misc(bpy.types.Menu):
     bl_label = "Set Folder Icon to"
     
     def draw(self, context):
+        selections = skputils.selected_shape_keys()
+        
         layout = self.layout
+        
+        if selections:
+            layout.enabled = False
         
         skp = context.scene.shape_keys_plus
         obj = context.active_object
@@ -2169,7 +2501,7 @@ class OBJECT_MT_skp_folder_icons_misc(bpy.types.Menu):
                 icon=p[0],
                 text=p[2])
             
-            op.icons = skputils.icon_pairs.index(p)
+            op.icons = p[3]
             op.swap = False
             op.set_as_default = not is_active_folder
             
@@ -2232,7 +2564,11 @@ class OBJECT_OT_skp_shape_key_parent(bpy.types.Operator):
             ('PARENT', "", ""),
             ('UNPARENT', "", ""),
             ('CLEAR', "", "Unparents the active shape key completely"),
-            ('NEW', "", "Creates a new parent for the active shape key")
+            ('NEW', "", "Creates a new parent for the active shape key"),
+            ('PARENT_SELECTED', "", ""),
+            ('UNPARENT_SELECTED', "", ""),
+            ('CLEAR_SELECTED', "", "Unparents the selected shape keys completely"),
+            ('NEW_SELECTED', "", "Creates a new parent for the selected shape keys")
         ),
         default='PARENT',
         options={'HIDDEN'})
@@ -2247,9 +2583,12 @@ class OBJECT_OT_skp_shape_key_parent(bpy.types.Operator):
     def execute(self, context):
         skp = context.scene.shape_keys_plus
         
-        obj = context.object
+        obj = context.active_object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
+        selections = [key.name for key in skputils.selected_shape_keys()]
+        
+        shape_keys.shape_keys_plus.selections.clear()
         
         child = key_blocks.get(self.child)
         parent = key_blocks.get(self.parent)
@@ -2262,6 +2601,76 @@ class OBJECT_OT_skp_shape_key_parent(bpy.types.Operator):
             shape_key_unparent(child, clear=True)
         elif self.type == 'NEW':
             shape_key_parent(child, shape_key_add(type='PARENT'))
+        elif self.type == 'PARENT_SELECTED':
+            children = []
+            
+            for name in selections:
+                child = key_blocks[name]
+                child_parent = skputils.get_key_parent(child)
+                
+                if child_parent:
+                    skputils.shift_folder_children_value(child_parent, -1)
+                
+                # set the shape keys in the proper order
+                obj.active_shape_key_index = skputils.get_key_index(child)
+                bpy.ops.object.shape_key_move(type='BOTTOM')
+            
+            if skp.shape_key_parent_placement == 'TOP':
+                selections = reversed(selections)
+            
+            for name in selections:
+                child = key_blocks[name]
+                shape_key_parent(child, parent)
+                
+                children.append(child)
+            
+            for child in children:
+                shape_key_select(child, True)
+        elif self.type == 'UNPARENT_SELECTED':
+            children = []
+            
+            for name in selections:
+                child = key_blocks[name]
+                shape_key_unparent(child)
+                
+                children.append(child)
+            
+            for child in children:
+                shape_key_select(child, True)
+        elif self.type == 'CLEAR_SELECTED':
+            children = []
+            
+            for name in selections:
+                child = key_blocks[name]
+                shape_key_unparent(child, clear=True)
+                
+                children.append(child)
+            
+            for child in children:
+                shape_key_select(child, True)
+        elif self.type == 'NEW_SELECTED':
+            parent = shape_key_add(type='FOLDER')
+            children = []
+            
+            for name in selections:
+                child = key_blocks[name]
+                shape_key_unparent(child, clear=True)
+                
+                # set the shape keys in the proper order
+                obj.active_shape_key_index = skputils.get_key_index(child)
+                bpy.ops.object.shape_key_move(type='BOTTOM')
+            
+            if skp.shape_key_parent_placement == 'TOP':
+                selections = reversed(selections)
+            
+            for name in selections:
+                child = key_blocks[name]
+                shape_key_parent(child, parent)
+                
+                children.append(child)
+            
+            for child in children:
+                shape_key_select(child, True)
         
         # force update SKP cache to ensure that the UI updates
         skputils.update_cache(override=True)
@@ -2289,7 +2698,10 @@ class OBJECT_OT_skp_shape_key_add(bpy.types.Operator):
         obj = context.active_object
         valid_types = {'MESH', 'LATTICE', 'CURVE', 'SURFACE'}
         
-        return obj and obj.mode != 'EDIT' and obj.type in valid_types
+        return \
+            obj and \
+            obj.mode != 'EDIT' \
+            and obj.type in valid_types
     
     def execute(self, context):
         shape_key_add(self.type)
@@ -2304,7 +2716,8 @@ class OBJECT_OT_skp_shape_key_remove(bpy.types.Operator):
     type = bpy.props.EnumProperty(
         items=(
             ('DEFAULT', "", ""),
-            ('ALL', "", "")
+            ('CLEAR', "", ""),
+            ('DEFAULT_SELECTED', "", "")
         ),
         default='DEFAULT',
         options={'HIDDEN'})
@@ -2313,7 +2726,9 @@ class OBJECT_OT_skp_shape_key_remove(bpy.types.Operator):
     def poll(cls, context):
         obj = context.active_object
         
-        return obj.mode != 'EDIT' and obj.active_shape_key
+        return \
+            obj.mode != 'EDIT' and \
+            obj.active_shape_key
     
     def execute(self, context):
         shape_key_remove(self.type)
@@ -2322,14 +2737,17 @@ class OBJECT_OT_skp_shape_key_remove(bpy.types.Operator):
 class OBJECT_OT_skp_shape_key_copy(bpy.types.Operator):
     bl_label = "Copy Shape"
     bl_idname = 'object.skp_shape_key_copy'
-    bl_description = "Copy the active shape key"
+    bl_description = "Copy existing shape key"
     bl_options = {'REGISTER', 'UNDO'}
     
     type = bpy.props.EnumProperty(
         items=(
             ('DEFAULT', "", ""),
             ('MIRROR', "", ""),
-            ('MIRROR_TOPOLOGY', "", "")
+            ('MIRROR_TOPOLOGY', "", ""),
+            ('DEFAULT_SELECTED', "", ""),
+            ('MIRROR_SELECTED', "", ""),
+            ('MIRROR_TOPOLOGY_SELECTED', "", "")
         ),
         default='DEFAULT',
         options={'HIDDEN'})
@@ -2338,7 +2756,10 @@ class OBJECT_OT_skp_shape_key_copy(bpy.types.Operator):
     def poll(cls, context):
         obj = context.active_object
         
-        return obj and obj.active_shape_key and obj.mode != 'EDIT'
+        return \
+            obj and \
+            obj.active_shape_key and \
+            obj.mode != 'EDIT'
     
     def execute(self, context):
         shape_key_copy(self.type)
@@ -2347,7 +2768,7 @@ class OBJECT_OT_skp_shape_key_copy(bpy.types.Operator):
 class OBJECT_OT_skp_shape_key_move(bpy.types.Operator):
     bl_idname = 'object.skp_shape_key_move'
     bl_label = "Move Shape Key"
-    bl_description = "Move the active shape key up/down in the list"
+    bl_description = "Move shape key up/down in the list"
     bl_options = {'REGISTER', 'UNDO'}
     
     type = bpy.props.EnumProperty(
@@ -2356,8 +2777,11 @@ class OBJECT_OT_skp_shape_key_move(bpy.types.Operator):
             ('TOP', "Top", ""),
             ('UP', "Up", ""),
             ('DOWN', "Down", ""),
-            ('BOTTOM', "Bottom", "")
+            ('BOTTOM', "Bottom", ""),
         ))
+    
+    selected = bpy.props.BoolProperty(
+        options={'HIDDEN'})
     
     @classmethod
     def poll(cls, context):
@@ -2380,7 +2804,32 @@ class OBJECT_OT_skp_shape_key_move(bpy.types.Operator):
             return False
     
     def execute(self, context):
-        shape_key_move(self.type)
+        obj = context.active_object
+        shape_keys = obj.data.shape_keys
+        key_blocks = shape_keys.key_blocks
+        
+        if self.selected:
+            original_index = obj.active_shape_key_index
+            
+            names = [key.name for key in skputils.selected_shape_keys()]
+            selections = [key.name for key in skputils.selected_shape_keys()]
+            
+            shape_keys.shape_keys_plus.selections.clear()
+            
+            if self.type in ('DOWN', 'TOP'):
+                selections = reversed(selections)
+            
+            for name in selections:
+                index = skputils.get_key_index(key_blocks[name])
+                shape_key_move(self.type, index)
+            
+            for name in names:
+                shape_key_select(name, True)
+            
+            obj.active_shape_key_index = original_index
+        else:
+            shape_key_move(self.type)
+        
         return {'FINISHED'}
 
 class OBJECT_OT_skp_shape_key_select(bpy.types.Operator):
@@ -2407,39 +2856,21 @@ class OBJECT_OT_skp_shape_key_select(bpy.types.Operator):
     
     def execute(self, context):
         skp = context.scene.shape_keys_plus
-        obj = context.object
+        obj = context.active_object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         selections = shape_keys.shape_keys_plus.selections
-        key = key_blocks[self.index]
-        index = str(self.index)
-        
-        def valid_selection(i):
-            return i > 0 and not skputils.is_key_folder(key_blocks[i])
-        
-        def select(i, v):
-            if v == True:
-                s = selections[i] if i in selections else selections.add()
-                s.name = i
-            else:
-                while i in selections:
-                    selections.remove(selections.find(i))
         
         if self.mode == 'TOGGLE':
-            if valid_selection(self.index):
-                select(index, index not in selections)
+            shape_key_select(self.index, str(self.index) not in selections)
         elif self.mode == 'ALL':
-            for i, key in enumerate(key_blocks):
-                if valid_selection(i):
-                    select(str(i), True)
+            for index, key in enumerate(key_blocks):
+                shape_key_select(index, True)
         elif self.mode == 'NONE':
             selections.clear()
         elif self.mode == 'INVERSE':
-            for i, key in enumerate(key_blocks):
-                if valid_selection(i):
-                    i = str(i)
-                    
-                    select(i, i not in selections)
+            for index, key in enumerate(key_blocks):
+                shape_key_select(index, str(index) not in selections)
         
         return {'FINISHED'}
 
@@ -2483,6 +2914,10 @@ class OBJECT_OT_skp_folder_ungroup(bpy.types.Operator):
         children = skputils.get_folder_children(key)
         parent = skputils.get_key_parent(key)
         
+        selections = [key.name for key in skputils.selected_shape_keys()]
+        
+        shape_keys.shape_keys_plus.selections.clear()
+        
         skputils.toggle_folder(key, expand=True)
         
         old_selection = obj.active_shape_key_index
@@ -2503,6 +2938,9 @@ class OBJECT_OT_skp_folder_ungroup(bpy.types.Operator):
         obj.active_shape_key_index = \
             old_selection - \
             (1 if (old_selection > self.index or not children) else 0)
+        
+        for name in selections:
+            shape_key_select(name, True)
         
         return {'FINISHED'}
 
@@ -2684,53 +3122,109 @@ class DRIVER_OT_skp_variable_move(bpy.types.Operator):
         
         return {'FINISHED'}
 
-'''
-class OBJECT_OT_skp_custom_properties_from_selected(bpy.types.Operator):
-    bl_label = "Custom Properties from Selected"
-    bl_idname = 'object.skp_custom_properties_from_selected'
+class OBJECT_OT_skp_custom_property_from_shape_key(bpy.types.Operator):
+    bl_label = "Custom Property from Shape Key"
+    bl_idname = 'object.skp_custom_property_from_shape_key'
     bl_description = \
-        ("Create custom properties from the selected "
-         "shape keys and link them to new driver variables")
+        ("Creates a custom property on the "
+         "target named after the shape key")
     bl_options = {'REGISTER', 'UNDO'}
     
-    link = bpy.props.BoolProperty(
-        name="Link Variables",
-        description=\
-            ("Link new custom properties to "
-             "the selected shape keys via driver"),
-        default=True)
-    
-    prop_prefix = bpy.props.StringProperty(
-        name="Custom Property Prefix",
-        default="")
-    
-    prop_suffix = bpy.props.StringProperty(
-        name="Custom Property Suffix",
-        default="")
-    
-    var_prefix = bpy.props.StringProperty(
-        name="Driver Variable Prefix",
-        default="")
-    
-    var_suffix = bpy.props.StringProperty(
-        name="Driver Variable Suffix",
-        default="")
-    
-    var_name = bpy.props.StringProperty(
-        name="Driver Variable Name",
-        default="var")
+    mode = bpy.props.EnumProperty(
+        items=(
+            ('ACTIVE', "", ""),
+            ('SELECTED', "", "")
+        ),
+        options={'HIDDEN'})
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        skp = context.scene.shape_keys_plus
+        object_target = skp.custom_property.object_target
         
-        return obj and obj.active_shape_key
+        return object_target in context.scene.objects
     
     def execute(self, context):
         layout = self.layout
         
+        skp = context.scene.shape_keys_plus
+        
+        obj = context.active_object
+        
+        if not obj.data.shape_keys:
+            return {'CANCELLED'}
+        
+        target_object = context.scene.objects[skp.custom_property.object_target]
+        target = target_object
+        shape_keys = obj.data.shape_keys
+        key_blocks = shape_keys.key_blocks
+        
+        if target.type == 'ARMATURE' and skp.custom_property.bone_target:
+            target_bone = target.pose.bones[skp.custom_property.bone_target]
+            target = target_bone
+        else:
+            target_bone = None
+        
+        def add_custom_property(target, key):
+            rna_ui = target.get('_RNA_UI')
+            
+            if rna_ui is None:
+                target['_RNA_UI'] = {}
+                
+                rna_ui = target['_RNA_UI']
+            
+            name = \
+                skp.custom_property.name_prefix + \
+                key.name + \
+                skp.custom_property.name_suffix
+            
+            target[name] = key.value
+            rna_ui[name] = {}
+            
+            rna = rna_ui[name]
+            
+            rna['min'], rna['max'] = key.slider_min, key.slider_max
+            rna['soft_min'], rna['soft_max'] = rna['min'], rna['max']
+            rna['description'] = ""
+            
+            return name, rna
+        
+        def add_driver(key, prop):
+            driver = skputils.get_key_driver(shape_keys, key)
+            name, rna = prop
+            
+            if not driver:
+                driver = key.driver_add('value').driver
+                driver.type = 'AVERAGE'
+                
+                variable = driver.variables.new()
+                variable.type = 'SINGLE_PROP'
+                
+                target = variable.targets[0]
+                target.id_type = 'OBJECT'
+                target.id = target_object
+                
+                if target_bone:
+                    data_path = "pose.bones[\"" + target_bone.name + "\"]"
+                else:
+                    data_path = ""
+                
+                target.data_path = data_path + "[\"" + name + "\"]"
+            else:
+                return None
+        
+        def activate(target, key):
+            prop = add_custom_property(target, key)
+            
+            if skp.custom_property.auto_driver:
+                add_driver(key, prop)
+        
+        if self.mode == 'ACTIVE':
+            activate(target, obj.active_shape_key)
+        elif self.mode == 'SELECTED':
+            [activate(target, key) for key in skputils.selected_shape_keys()]
+        
         return {'FINISHED'}
-'''
 
 class OBJECT_OT_skp_debug_folder_data(bpy.types.Operator):
     bl_label = "[ DEBUG ] Folder Data"
@@ -2761,7 +3255,7 @@ class OBJECT_OT_skp_debug_folder_data(bpy.types.Operator):
         name="Icon Pair",
         default=0,
         min=0,
-        max=60,
+        max=skputils.icon_pairs[-1][3],
         description=\
             ("The pair of icons used when the "
              "folder is expanded or collapsed"))
@@ -2796,7 +3290,7 @@ class OBJECT_OT_skp_debug_folder_data(bpy.types.Operator):
 ################################ PANEL #################################
 ########################################################################
 
-class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
+class DATA_PT_shape_keys_plus(bpy.types.Panel):
     bl_label = "Shape Keys+"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
@@ -2817,6 +3311,7 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         active_index = obj.active_shape_key_index
+        selections = skputils.selected_shape_keys()
         
         if active_key:
             is_active_folder = skputils.is_key_folder(active_key)
@@ -2837,7 +3332,9 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         row = layout.row()
         box = row.box()
         col = box.column()
-        col.label("Placement")
+        col.label(
+            text="Placement",
+            icon='COLLAPSEMENU')
         col.separator()
         
         prop_data = skp.bl_rna.properties['shape_key_add_placement']
@@ -2866,13 +3363,16 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         
         box = row.box()
         col = box.column()
-        col.label("Hierarchy")
+        col.label(
+            text="Hierarchy",
+            icon='OOPS')
         col.separator()
         
         col.prop(
             data=skp,
             property='shape_key_auto_parent',
-            toggle=True)
+            toggle=True,
+            icon='FILE_PARENT')
         
         col.prop(
             data=skp,
@@ -2882,7 +3382,14 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         box = row.box()
         box.scale_x = 0.75
         col = box.column()
-        col.label("Select...")
+        
+        if selections:
+            col.label(str(len(selections)) + " Selected")
+        else:
+            col.label(
+                text="Select...",
+                icon='RESTRICT_SELECT_OFF')
+        
         col.separator()
         
         op = col.operator(
@@ -2928,15 +3435,20 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         #####################
         
         row = col.row(align=True)
+        btn = row.column()
         
-        op = row.operator(
+        btn.enabled = not selections
+        
+        op = btn.operator(
             operator='object.skp_shape_key_add',
             icon='ZOOMIN',
             text="")
         
         op.type = 'DEFAULT'
         
-        row.menu(
+        mnu = row.column()
+        
+        mnu.menu(
             menu='MESH_MT_skp_shape_key_add_specials',
             icon='DOWNARROW_HLT',
             text="")
@@ -2946,15 +3458,20 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         ######################
         
         row = col.row(align=True)
+        btn = row.column()
         
-        op = row.operator(
+        btn.enabled = not selections
+        
+        op = btn.operator(
             operator='object.skp_shape_key_copy',
             icon='PASTEDOWN',
             text="")
         
         op.type = 'DEFAULT'
         
-        row.menu(
+        mnu = row.column()
+        
+        mnu.menu(
             menu='MESH_MT_skp_shape_key_copy_specials',
             icon='DOWNARROW_HLT',
             text="")
@@ -2964,15 +3481,20 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
         ########################
         
         row = col.row(align=True)
+        btn = row.column()
         
-        op = row.operator(
+        btn.enabled = not selections
+        
+        op = btn.operator(
             operator='object.skp_shape_key_remove',
             icon='ZOOMOUT',
             text="")
         
         op.type = 'DEFAULT'
         
-        row.menu(
+        mnu = row.column()
+        
+        mnu.menu(
             menu='MESH_MT_skp_shape_key_remove_specials',
             icon='DOWNARROW_HLT',
             text="")
@@ -3003,6 +3525,7 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
             text="")
         
         op.type = 'TOP'
+        op.selected = bool(selections)
         
         op = sub.operator(
             operator='object.skp_shape_key_move',
@@ -3010,6 +3533,7 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
             text="")
         
         op.type = 'UP'
+        op.selected = bool(selections)
         
         op = sub.operator(
             operator='object.skp_shape_key_move',
@@ -3017,6 +3541,7 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
             text="")
         
         op.type = 'DOWN'
+        op.selected = bool(selections)
         
         op = sub.operator(
             operator='object.skp_shape_key_move',
@@ -3024,6 +3549,7 @@ class OBJECT_PT_shape_keys_plus(bpy.types.Panel):
             text="")
         
         op.type = 'BOTTOM'
+        op.selected = bool(selections)
         
         split = layout.split(percentage=0.4)
         
@@ -3419,13 +3945,11 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
         parent = get(parents, 0, None)
         is_folder = skputils.is_key_folder(key_block)
         is_selected = skputils.shape_key_selected(index)
-        selected_shape_keys = skputils.selected_shape_keys()
-        
-        selection_exists = len(selected_shape_keys) > 0
+        selections = skputils.selected_shape_keys()
         
         use_edit_mode = obj.use_shape_key_edit_mode and obj.type == 'MESH'
         
-        l1 = layout.row(align = True)
+        l1 = layout.row(align=True)
         l1.scale_x = 0.5
         
         # check if this shape key belongs in a folder
@@ -3449,7 +3973,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                 key_block.vertex_group,
                 skputils.expand)
             
-            icon_pair = skputils.icon_pairs[icon_pair_value]
+            icon_pair = skputils.get_icon_pair(icon_pair_value)
             icon_swap = icon_swap_value == 1
             
             if expand_value > 0:
@@ -3480,6 +4004,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
         else:
             l2 = l1.row()
             l2.scale_x = 5
+            l2.active = not selections or is_selected
             
             l2.prop(
                 data=key_block,
@@ -3511,7 +4036,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                     text="",
                     emboss=False)
             elif index > 0:
-                if selection_exists:
+                if selections:
                     can_edit = is_selected
                 else:
                     can_edit = True
@@ -3523,9 +4048,8 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                         text="",
                         emboss=False)
                 else:
-                    row.label(str(key_block.value))
-            else:
-                row.label(text="")
+                    row.active = False
+                    row.label('{0:.3f}'.format(key_block.value))
             
             row.prop(
                 data=key_block,
@@ -3684,6 +4208,114 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                     filter_set(idx, in_active_range)
         
         return flt_flags, flt_neworder
+
+class DATA_PT_shape_keys_plus_toolshelf(bpy.types.Panel):
+    bl_label = "Shape Keys+"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "TOOLS"
+    bl_category = "Create"
+    
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        valid_types = {'MESH', 'LATTICE', 'CURVE', 'SURFACE'}
+        
+        return obj and obj.type in valid_types and obj.data.shape_keys
+    
+    def draw(self, context):
+        skp = context.scene.shape_keys_plus
+        obj = context.active_object
+        shape_keys = obj.data.shape_keys
+        active = obj.active_shape_key
+        selections = skputils.selected_shape_keys()
+        
+        layout = self.layout
+        
+        box = layout.box()
+        
+        row = box.row()
+        
+        row.label(
+            text="Custom Properties",
+            icon='RNA_ADD')
+        
+        box2 = box.box()
+        
+        row = box2.row()
+        
+        row.prop_search(
+            data=skp.custom_property,
+            property='object_target',
+            search_data=context.scene,
+            search_property='objects',
+            text="Object")
+        
+        obj = get(context.scene.objects, skp.custom_property.object_target)
+        
+        if obj and obj.type == 'ARMATURE':
+            row = box2.row()
+            
+            row.prop_search(
+                data=skp.custom_property,
+                property='bone_target',
+                search_data=obj.pose,
+                search_property='bones',
+                text="Bone")
+        
+        box2 = box.box()
+        
+        row = box2.row()
+        
+        row.prop(
+            data=skp.custom_property,
+            property='name_prefix')
+        
+        row.prop(
+            data=skp.custom_property,
+            property='name_suffix')
+        
+        box2 = box.box()
+        
+        row = box2.row()
+        
+        row.prop(
+            data=skp.custom_property,
+            property='auto_driver',
+            icon='DRIVER',
+            expand=True)
+        
+        box2 = box.box()
+        
+        row = box2.row()
+        
+        row.enabled = \
+            bool(active) and \
+            not skputils.is_key_folder(active) and \
+            active != shape_keys.key_blocks[0]
+        
+        op = row.operator(
+            operator='object.skp_custom_property_from_shape_key',
+            text="Create from Active",
+            icon='SHAPEKEY_DATA')
+        
+        op.mode = 'ACTIVE'
+        
+        row = box2.row()
+        
+        row.enabled = bool(selections)
+        
+        selections_count = \
+            (" (" + str(len(selections)) + ")") if selections else ""
+        
+        from_selected_text = \
+            "Create from Selected" + (selections_count if selections else "")
+        
+        op = row.operator(
+            operator='object.skp_custom_property_from_shape_key',
+            text=from_selected_text,
+            icon='FILE_TICK')
+        
+        op.mode = 'SELECTED'
 
 ########################################################################
 ############################# REGISTRATION #############################
