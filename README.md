@@ -1,6 +1,6 @@
 Shape Keys+
 ===========
-###### Shape Keys Plus v1.1.2
+###### Shape Keys Plus v1.2.0
 
 A [Blender](https://www.blender.org/) add-on that replaces the default ***Shape Keys*** panel with ***Shape Keys+,*** a plus-size panel containing extra features for creating, sorting, viewing, and driving shape keys.
 
@@ -11,7 +11,6 @@ A [Blender](https://www.blender.org/) add-on that replaces the default ***Shape 
 * [Folders](#folders)
 * [Copying](#copying)
 * [Drivers](#drivers)
-* [Selecting](#selecting)
 * [Filtering](#filtering)
 
 <a name="folders"/>
@@ -62,12 +61,6 @@ When a driver exists for a shape key, its properties will appear at the bottom o
 #### Variables
 
 In the ***Shape Keys+*** driver editor, variables also have extra features. Here, they can be freely moved up and down, as well as to the top and bottom of the list. Like shape keys, driver variables can also be copied using the button with the *clipboard* icon.
-
-<a name="selecting"/>
-
-## Selecting
-
-Still a minor feature of ***Shape Keys+,*** the ability to select shape keys using the checkboxes on the right is currently used for only one operator, **New Shape From Mix (Selected)**. As the name suggests, this operator performs Blender's **New Shape From Mix** operation on only the selected shape keys. This operator becomes visible under **Add Shape's** drop-down menu once any shape key is selected.
 
 <a name="filtering"/>
 
