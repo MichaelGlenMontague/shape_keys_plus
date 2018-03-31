@@ -1,0 +1,6 @@
+1.2.0
+	• Added multi-select support for basic shape key operations.
+	
+	• Added Tool Shelf >> Create >> Shape Keys+ panel to contain the "Custom Property from Shape Key" operator.
+	
+	• Minor UI adjustments.
