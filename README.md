@@ -1,6 +1,6 @@
 Shape Keys+
 ===========
-###### Shape Keys Plus v1.2.0
+###### Shape Keys Plus v1.2
 
 A [Blender](https://www.blender.org/) add-on that replaces the default ***Shape Keys*** panel with ***Shape Keys+,*** a plus-size panel containing extra features for creating, sorting, viewing, and driving shape keys.
 
