@@ -19,7 +19,7 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 2, 0),
+    "version" : (1, 2, 1),
     "blender" : (2, 79, 0),
     "location" : "Properties > Data",
     "description" : \
@@ -363,7 +363,7 @@ class skputils():
                            children=children_default,
                            expand=expand_default,
                            icons=None,
-                           icons_swap=icons_swap):
+                           icons_swap=icons_swap_default):
         
         skp = bpy.context.scene.shape_keys_plus
         
@@ -4338,6 +4338,14 @@ def register():
         if preferences.hide_default and default_panel_exists:
             bpy.utils.unregister_class(
                 bl_ui.properties_data_mesh.DATA_PT_shape_keys)
+        
+        # v1.0.x
+        if hasattr(bpy.types, 'OBJECT_PT_skp_shape_keys_plus'):
+            bpy.utils.unregister_class(bpy.types.OBJECT_PT_skp_shape_keys_plus)
+        
+        # v1.1.x
+        if hasattr(bpy.types, 'OBJECT_PT_shape_keys_plus'):
+            bpy.utils.unregister_class(bpy.types.OBJECT_PT_shape_keys_plus)
 
 def unregister():
     bpy.utils.unregister_module(__name__)
