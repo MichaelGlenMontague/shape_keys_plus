@@ -19,8 +19,8 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 3, 0),
-    "blender" : (2, 80, 37),
+    "version" : (1, 3, 1),
+    "blender" : (2, 80, 39),
     "location" : "Properties > Data",
     "description" : "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning" : "",
@@ -2043,7 +2043,7 @@ class MESH_MT_skp_shape_key_other_specials(bpy.types.Menu):
             icon='COPY_ID')
         
         if __name__ != "__main__":
-            preferences = context.user_preferences.addons[__name__].preferences
+            preferences = context.preferences.addons[__name__].preferences
             
             if preferences.enable_debugging and active_key:
                 layout.operator(
@@ -3966,7 +3966,7 @@ def register():
     bpy.types.Key.shape_keys_plus = bpy.props.PointerProperty(type=KeyProperties)
     
     if __name__ != "__main__":
-        preferences = bpy.context.user_preferences.addons[__name__].preferences
+        preferences = bpy.context.preferences.addons[__name__].preferences
         
         default_panel_exists = hasattr(bpy.types, 'DATA_PT_shape_keys')
         
