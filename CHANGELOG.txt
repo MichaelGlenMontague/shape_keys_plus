@@ -1,3 +1,6 @@
+1.3.1
+	• Updated /user_preferences/ references to /preferences/.
+
 1.3.0
 	• Initial update for compatibility with Blender's 2.80 Beta.
 	• Removed now-obsolete "Custom Property from Shape Key" operator and dedicated panel.
