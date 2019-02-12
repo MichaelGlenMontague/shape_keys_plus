@@ -19,8 +19,8 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 3, 1),
-    "blender" : (2, 80, 39),
+    "version" : (1, 3, 2),
+    "blender" : (2, 80, 44),
     "location" : "Properties > Data",
     "description" : "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning" : "",
@@ -3768,7 +3768,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                 op.index = index
                 op.mode = 'TOGGLE'
     
-    def draw_filter(self, context, layout, b):
+    def draw_filter(self, context, layout):
         skp = context.scene.shape_keys_plus
         
         row = layout.row()
