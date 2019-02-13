@@ -1,3 +1,6 @@
+1.3.2
+	• Removed extra, unused parameter from the UIList's /draw_filter()/ method.
+
 1.3.1
 	• Updated /user_preferences/ references to /preferences/.
 
