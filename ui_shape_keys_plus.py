@@ -19,8 +19,8 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 3, 2),
-    "blender" : (2, 80, 44),
+    "version" : (1, 3, 3),
+    "blender" : (2, 80, 75),
     "location" : "Properties > Data",
     "description" : "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning" : "",
@@ -1161,6 +1161,20 @@ def metadata(data, key):
     
     return m
 
+def hide_modifiers(obj):
+    values = []
+    
+    for modifier in obj.modifiers:
+        values.append(modifier.show_viewport)
+        modifier.show_viewport = False
+    
+    return obj, values
+
+def show_modifiers(data):
+    obj, values = data
+    
+    for i, modifier in enumerate(obj.modifiers):
+        modifier.show_viewport = values[i]
 
 def shape_key_parent(key, parent, sibling=None):
     if key.name == parent.name:
@@ -1438,6 +1452,8 @@ def shape_key_move(type, index=-1):
     key_blocks = shape_keys.key_blocks
     data = evaluate()
     
+    modifiers = hide_modifiers(obj)
+    
     if index == -1:
         index = obj.active_shape_key_index
     
@@ -1615,6 +1631,8 @@ def shape_key_move(type, index=-1):
                 skip_over_folder(next_metadata)
             else:
                 move(index, 'DOWN')
+    
+    show_modifiers(modifiers)
 
 
 def shape_key_select(i, v):
@@ -3756,6 +3774,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                 data=key_block,
                 property='mute',
                 text="",
+                icon='HIDE_OFF',
                 emboss=False)
             
             if index > 0 and not is_folder:
