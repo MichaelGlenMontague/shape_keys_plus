@@ -19,8 +19,8 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 3, 3),
-    "blender" : (2, 80, 75),
+    "version" : (1, 3, 4),
+    "blender" : (2, 82, 7),
     "location" : "Properties > Data",
     "description" : "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning" : "",
@@ -269,7 +269,7 @@ class utils:
     
     @classmethod
     def update_cache(cls, override=False):
-        obj = bpy.context.active_object
+        obj = bpy.context.object
         
         if obj:
             shape_keys = obj.data.shape_keys
@@ -412,7 +412,7 @@ class utils:
         context = bpy.context
         
         if cls.is_key_folder(folder):
-            shape_keys = context.active_object.data.shape_keys
+            shape_keys = context.object.data.shape_keys
             folder_index = cls.get_key_index(folder)
             
             s = folder_index + 1
@@ -440,7 +440,7 @@ class utils:
         context = bpy.context
         
         if cls.is_key_folder(folder):
-            shape_keys = context.active_object.data.shape_keys
+            shape_keys = context.object.data.shape_keys
             folder_index = shape_keys.key_blocks.find(folder.name)
             index = folder_index + 1
             capacity = cls.get_folder_capacity(folder)
@@ -456,7 +456,7 @@ class utils:
         context = bpy.context
         
         if key:
-            shape_keys = context.active_object.data.shape_keys
+            shape_keys = context.object.data.shape_keys
             index = cls.get_key_index(key)
             i = index - 1
             
@@ -480,7 +480,7 @@ class utils:
         parents = []
         
         if key:
-            shape_keys = context.active_object.data.shape_keys
+            shape_keys = context.object.data.shape_keys
             index = cls.get_key_index(key)
             i = index - 1
             
@@ -503,7 +503,7 @@ class utils:
     @classmethod
     def get_key_index(cls, key):
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         
@@ -517,7 +517,7 @@ class utils:
         siblings = [None, None]
         
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         parents = cls.get_key_parents(key)
@@ -711,7 +711,7 @@ class utils:
     @classmethod
     def shape_key_selected(cls, index):
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         
         if not shape_keys:
@@ -722,7 +722,7 @@ class utils:
     @classmethod
     def selected_shape_key_indices(cls):
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         
         indices = []
@@ -741,7 +741,7 @@ class utils:
     @classmethod
     def selected_shape_keys(cls):
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         
         keys = []
@@ -759,7 +759,7 @@ class utils:
     @classmethod
     def shape_key_move_to(cls, origin, destination):
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         
@@ -801,7 +801,7 @@ class utils:
     def apply_add_placement(cls, key, ref):
         context = bpy.context
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         
@@ -864,7 +864,7 @@ class utils:
         
         skp = context.scene.shape_keys_plus
         
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         
@@ -926,7 +926,7 @@ class utils:
     def apply_parent_placement(cls, key, parent):
         context = bpy.context
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         
         key_index = cls.get_key_index(key)
         parent_index = cls.get_key_index(parent)
@@ -952,7 +952,7 @@ class utils:
     def apply_unparent_placement(cls, key, clear):
         context = bpy.context
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         
@@ -1043,7 +1043,7 @@ class Metadata:
     
     def __init__(self, key, index):
         context = bpy.context
-        obj = context.active_object
+        obj = context.object
         
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
@@ -1142,7 +1142,7 @@ def evaluate():
     data = []
     
     context = bpy.context
-    obj = context.active_object
+    obj = context.object
     key_blocks = obj.data.shape_keys.key_blocks
     
     for index, key in enumerate(key_blocks):
@@ -1186,7 +1186,7 @@ def shape_key_parent(key, parent, sibling=None):
         utils.shift_folder_children_value(key_parent, -1)
     
     context = bpy.context
-    obj = context.active_object
+    obj = context.object
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
     
@@ -1272,7 +1272,7 @@ def shape_key_unparent(key, clear=False):
 def shape_key_add(type='DEFAULT'):
     context = bpy.context
     skp = context.scene.shape_keys_plus
-    obj = context.active_object
+    obj = context.object
     active_key = obj.active_shape_key
     active_index = obj.active_shape_key_index
     active_parent = utils.get_key_parent(active_key)
@@ -1363,7 +1363,7 @@ def shape_key_add(type='DEFAULT'):
 def shape_key_remove(type='DEFAULT', index=-1):
     context = bpy.context
     skp = context.scene.shape_keys_plus
-    obj = context.active_object
+    obj = context.object
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
     
@@ -1447,7 +1447,7 @@ def shape_key_remove(type='DEFAULT', index=-1):
 def shape_key_move(type, index=-1):
     context = bpy.context
     skp = context.scene.shape_keys_plus
-    obj = context.active_object
+    obj = context.object
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
     data = evaluate()
@@ -1638,7 +1638,7 @@ def shape_key_move(type, index=-1):
 def shape_key_select(i, v):
     context = bpy.context
     skp = context.scene.shape_keys_plus
-    obj = context.active_object
+    obj = context.object
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
     selections = shape_keys.shape_keys_plus.selections
@@ -1669,7 +1669,7 @@ def shape_key_select(i, v):
 def shape_key_copy(type='DEFAULT'):
     context = bpy.context
     skp = context.scene.shape_keys_plus
-    obj = context.active_object
+    obj = context.object
     shape_keys = obj.data.shape_keys
     key_blocks = shape_keys.key_blocks
     basis_key = shape_keys.reference_key
@@ -2002,7 +2002,7 @@ class MESH_MT_skp_shape_key_other_specials(bpy.types.Menu):
                 text='Selected (' + str(len(selections)) + ')',
                 icon='FILE_TICK')
         
-        obj = context.active_object
+        obj = context.object
         active_key = obj.active_shape_key
         is_active_folder = active_key and utils.is_key_folder(active_key)
         
@@ -2099,7 +2099,7 @@ class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):
         if selections:
             layout.enabled = False
         
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         
@@ -2167,7 +2167,7 @@ class OBJECT_MT_skp_shape_key_parent_selected(bpy.types.Menu):
     def draw(self, context):
         layout = self.layout
         
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         
@@ -2221,7 +2221,7 @@ class OBJECT_MT_skp_folder_icon(bpy.types.Menu):
             layout.enabled = False
         
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         
         active_key = obj.active_shape_key
         is_active_folder = active_key and utils.is_key_folder(active_key)
@@ -2304,7 +2304,7 @@ class OBJECT_MT_skp_folder_icons_standard(bpy.types.Menu):
             layout.enabled = False
         
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         
         active_key = obj.active_shape_key
         is_active_folder = active_key and utils.is_key_folder(active_key)
@@ -2343,7 +2343,7 @@ class OBJECT_MT_skp_folder_icons_special(bpy.types.Menu):
             layout.enabled = False
         
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         
         active_key = obj.active_shape_key
         is_active_folder = active_key and utils.is_key_folder(active_key)
@@ -2382,7 +2382,7 @@ class OBJECT_MT_skp_folder_icons_misc(bpy.types.Menu):
             layout.enabled = False
         
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         
         active_key = obj.active_shape_key
         is_active_folder = active_key and utils.is_key_folder(active_key)
@@ -2433,7 +2433,7 @@ class OBJECT_OT_skp_folder_icon(bpy.types.Operator):
     
     def execute(self, context):
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         
@@ -2486,7 +2486,7 @@ class OBJECT_OT_skp_shape_key_parent(bpy.types.Operator):
     
     def execute(self, context):
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         selections = [key.name for key in utils.selected_shape_keys()]
@@ -2607,7 +2607,7 @@ class OBJECT_OT_skp_shape_key_add(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         valid_types = {'MESH', 'LATTICE', 'CURVE', 'SURFACE'}
         
         return obj and obj.mode != 'EDIT' and obj.type in valid_types
@@ -2634,7 +2634,7 @@ class OBJECT_OT_skp_shape_key_remove(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj.mode != 'EDIT' and obj.active_shape_key
     
     def execute(self, context):
@@ -2662,7 +2662,7 @@ class OBJECT_OT_skp_shape_key_copy(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key and obj.mode != 'EDIT'
     
     def execute(self, context):
@@ -2692,7 +2692,7 @@ class OBJECT_OT_skp_shape_key_move(bpy.types.Operator):
     def poll(cls, context):
         # Check if sibling shape keys exist before attempting to move.
         # A folder's children do not count as siblings to the folder.
-        obj = context.active_object
+        obj = context.object
         
         if not obj or obj.mode == 'EDIT':
             return False
@@ -2709,7 +2709,7 @@ class OBJECT_OT_skp_shape_key_move(bpy.types.Operator):
             return False
     
     def execute(self, context):
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         
@@ -2758,12 +2758,12 @@ class OBJECT_OT_skp_shape_key_select(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         selections = shape_keys.shape_keys_plus.selections
@@ -2791,7 +2791,7 @@ class OBJECT_OT_skp_folder_toggle(bpy.types.Operator):
     index : bpy.props.IntProperty(options={'HIDDEN'})
     
     def execute(self, context):
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key_blocks = shape_keys.key_blocks
         active_key = obj.active_shape_key
@@ -2816,7 +2816,7 @@ class OBJECT_OT_skp_folder_ungroup(bpy.types.Operator):
     index : bpy.props.IntProperty(options={'HIDDEN'})
     
     def execute(self, context):
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         key = shape_keys.key_blocks[self.index]
         is_folder = utils.is_key_folder(key)
@@ -2858,7 +2858,7 @@ class DRIVER_OT_skp_driver_update(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
@@ -2880,7 +2880,7 @@ class DRIVER_OT_skp_variable_add(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
@@ -2907,7 +2907,7 @@ class DRIVER_OT_skp_variable_remove(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
@@ -2934,7 +2934,7 @@ class DRIVER_OT_skp_variable_copy(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
@@ -2989,7 +2989,7 @@ class DRIVER_OT_skp_variable_move(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
@@ -3052,11 +3052,11 @@ class OBJECT_OT_skp_debug_folder_data(bpy.types.Operator):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         return obj and obj.active_shape_key
     
     def execute(self, context):
-        obj = context.active_object
+        obj = context.object
         active_key = obj.active_shape_key
         
         active_key.vertex_group = utils.create_folder_data(
@@ -3082,7 +3082,7 @@ class DATA_PT_shape_keys_plus(bpy.types.Panel):
     
     @classmethod
     def poll(cls, context):
-        obj = context.active_object
+        obj = context.object
         valid_types = {'MESH', 'LATTICE', 'CURVE', 'SURFACE'}
         
         return obj and obj.type in valid_types
@@ -3091,7 +3091,7 @@ class DATA_PT_shape_keys_plus(bpy.types.Panel):
         layout = self.layout
         
         skp = context.scene.shape_keys_plus
-        obj = context.active_object
+        obj = context.object
         shape_keys = obj.data.shape_keys
         active_key = obj.active_shape_key
         active_index = obj.active_shape_key_index
