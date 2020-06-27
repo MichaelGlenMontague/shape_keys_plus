@@ -3602,6 +3602,11 @@ class DATA_PT_shape_keys_plus(bpy.types.Panel):
                     data=driver.variables[i].targets[0],
                     property='transform_type',
                     text="Type")
+
+                col.prop(
+                    data=driver.variables[i].targets[0],
+                    property='rotation_mode',
+                    text="Mode")
                 
                 col.prop(
                     data=driver.variables[i].targets[0],
@@ -3632,6 +3637,11 @@ class DATA_PT_shape_keys_plus(bpy.types.Panel):
                         data=target,
                         property='transform_type',
                         text="Type")
+
+                    col.prop(
+                        data=target,
+                        property='rotation_mode',
+                        text="Mode")
                     
                     col.prop(
                         data=target,
