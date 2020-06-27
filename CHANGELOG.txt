@@ -1,23 +1,38 @@
-1.3.4
-	• Replaced all /context.active_object/ with /context.object/ so that the add-on retains its references to the pinned object while another object is active.
+v1.3.5
+    - PATCH
+    • Added the Rotation Mode property to rotation-based Transform Channel drivers.
+    • Removed unused Transform Type/Space properties from Rotational Difference drivers.
 
-1.3.3
+v1.3.4
+    - PATCH
+	• Fixed pinning issue; replaced all /context.active_object/ with /context.object/ so that the add-on retains its references to the pinned object while another object is active. TODO
+
+v1.3.3
+    - PATCH
 	• To speed up the operation, moving a shape key will now temporarily disable all of the object's modifiers.
 	• Reverted the shape key mute icon from a checkbox back to an eye, since this add-on already uses the checkbox for multi-selection.
 
-1.3.2
+v1.3.2
+    - PATCH
 	• Removed extra, unused parameter from the UIList's /draw_filter()/ method.
 
-1.3.1
+v1.3.1
+    - PATCH
 	• Updated /user_preferences/ references to /preferences/.
 
-1.3.0
+v1.3.0
+    - MINOR
 	• Initial update for compatibility with Blender's 2.80 Beta.
 	• Removed now-obsolete "Custom Property from Shape Key" operator and dedicated panel.
+
+	- PATCH
 	• Minor UI adjustments.
 	• Minor code cleanup.
 
-1.2.0
+v1.2.0
+    - MINOR
 	• Added multi-select support for basic shape key operations.
 	• Added Tool Shelf >> Create >> Shape Keys+ panel to contain the "Custom Property from Shape Key" operator.
+
+	- PATCH
 	• Minor UI adjustments.
