@@ -19,7 +19,7 @@
 bl_info = {
     "name" : "Shape Keys+",
     "author" : "Michael Glen Montague",
-    "version" : (1, 3, 4),
+    "version" : (1, 3, 5),
     "blender" : (2, 82, 7),
     "location" : "Properties > Data",
     "description" : "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
@@ -3602,11 +3602,12 @@ class DATA_PT_shape_keys_plus(bpy.types.Panel):
                     data=driver.variables[i].targets[0],
                     property='transform_type',
                     text="Type")
-
-                col.prop(
-                    data=driver.variables[i].targets[0],
-                    property='rotation_mode',
-                    text="Mode")
+                
+                if driver.variables[i].targets[0].transform_type in ('ROT_X', 'ROT_Y', 'ROT_Z', 'ROT_W'):
+                    col.prop(
+                        data=driver.variables[i].targets[0],
+                        property='rotation_mode',
+                        text="Mode")
                 
                 col.prop(
                     data=driver.variables[i].targets[0],
@@ -3630,23 +3631,6 @@ class DATA_PT_shape_keys_plus(bpy.types.Panel):
                             search_property='bones',
                             text="Bone",
                             icon='BONE_DATA')
-                    
-                    col = box.column(align=True)
-                    
-                    col.prop(
-                        data=target,
-                        property='transform_type',
-                        text="Type")
-
-                    col.prop(
-                        data=target,
-                        property='rotation_mode',
-                        text="Mode")
-                    
-                    col.prop(
-                        data=target,
-                        property='transform_space',
-                        text="Space")
             elif driver.variables[i].type == 'LOC_DIFF':
                 for i, target in enumerate(driver.variables[i].targets):
                     row = box.column()
