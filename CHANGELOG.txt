@@ -5,7 +5,7 @@ v1.3.5
 
 v1.3.4
     - PATCH
-	• Fixed pinning issue; replaced all /context.active_object/ with /context.object/ so that the add-on retains its references to the pinned object while another object is active. TODO
+	• Fixed pinning issue; replaced all /context.active_object/ with /context.object/ so that the add-on retains its references to the pinned object while another object is active.
 
 v1.3.3
     - PATCH
