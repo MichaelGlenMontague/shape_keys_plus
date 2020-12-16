@@ -1,38 +1,83 @@
+v2.0.0
+    - MAJOR
+        • The add-on now utilizes a robust tree hierarchy internally, so folders can be multi-selected.
+        • Extended the "Copy Shape Key" operator to copy drivers and, optionally, override specific properties.
+        • The add-on has been organized into multiple Python modules under the `shape_keys_plus` package.
+        • The add-on has been fully translated to Japanese.
+            To add/modify translations, see the Japanese implementation in `shape_keys_plus/core/translations.py`.
+
+    - MINOR
+        • The "Mirror Shape Key" operator has been replaced with one that's compatible with folders and multi-selection.
+        • To save a bit of horizontal space, the sidebar's context menus and operator buttons have been merged.
+            To access a context menu, click and hold (or drag) the respective operator button.
+        • The debug operator "Mutate Folder" is now available via search menu.
+        • The normal shape key icon is now hidden to make folders easier to see,
+            but can be changed back to any icon in the add-on preferences.
+        • Folders icons explicitly set to the default pair will now be updated automatically.
+        • Moved the settings for the default folder icon to the add-on preferences,
+            so they will persist between projects.
+
+    - PATCH
+        • Fixed the Rotation Mode property being reset upon driver variable sorting operations.
+        • Fixed inability to retain driver variable data when DriverTarget.id is set to a non-Object.
+        • To further speed up shape key operations, the object will be temporarily hidden. This allows all
+            operations to be executed in bulk before updating the mesh, meaning performance issues are no
+            longer proportional to how many shape keys you have, but rather how long it takes to hide/unhide the object.
+            This can be further rectified on the user's end by hiding intense modifiers such as Subdivision.
+
 v1.3.5
     - PATCH
-    • Added the Rotation Mode property to rotation-based Transform Channel drivers.
-    • Removed unused Transform Type/Space properties from Rotational Difference drivers.
+        • Added the Rotation Mode property to rotation-based Transform Channel drivers.
+        • Removed unused Transform Type/Space properties from Rotational Difference drivers.
 
 v1.3.4
     - PATCH
-	• Fixed pinning issue; replaced all /context.active_object/ with /context.object/ so that the add-on retains its references to the pinned object while another object is active.
+	    • Fixed pinning issue; replaced all `context.active_object` with `context.object`
+	        so that the add-on retains its references to the pinned object while another object is active.
 
 v1.3.3
     - PATCH
-	• To speed up the operation, moving a shape key will now temporarily disable all of the object's modifiers.
-	• Reverted the shape key mute icon from a checkbox back to an eye, since this add-on already uses the checkbox for multi-selection.
+        • To speed up the operation, moving a shape key will now temporarily disable all of the object's modifiers.
+        • Reverted the shape key mute icon from a checkbox back to an eye,
+            since this add-on already uses the checkbox for multi-selection.
 
 v1.3.2
     - PATCH
-	• Removed extra, unused parameter from the UIList's /draw_filter()/ method.
+	    • Removed extra, unused parameter from the UIList's `draw_filter()` method.
 
 v1.3.1
     - PATCH
-	• Updated /user_preferences/ references to /preferences/.
+	    • Updated `user_preferences` references to `preferences`.
 
 v1.3.0
     - MINOR
-	• Initial update for compatibility with Blender's 2.80 Beta.
-	• Removed now-obsolete "Custom Property from Shape Key" operator and dedicated panel.
+        • Initial update for compatibility with Blender's 2.80 Beta.
+        • Removed now-obsolete "Custom Property from Shape Key" operator and dedicated panel.
 
 	- PATCH
-	• Minor UI adjustments.
-	• Minor code cleanup.
+        • Minor UI adjustments.
+        • Minor code cleanup.
 
 v1.2.0
     - MINOR
-	• Added multi-select support for basic shape key operations.
-	• Added Tool Shelf >> Create >> Shape Keys+ panel to contain the "Custom Property from Shape Key" operator.
+        • Added multi-select support for basic shape key operations.
+        • Added Tool Shelf >> Create >> Shape Keys+ panel to contain the "Custom Property from Shape Key" operator.
 
 	- PATCH
-	• Minor UI adjustments.
+	    • Minor UI adjustments.
+
+v1.1.2
+    - PATCH
+        • Fixed typo from v1.1.1 patch.
+
+v1.1.1
+    - PATCH
+        • Patched NameError exception.
+
+v1.1.0
+    - MINOR
+        • Cleaned up code.
+
+v1.0.0
+    - MAJOR
+        • Initial release.
