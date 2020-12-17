@@ -631,13 +631,14 @@ elif language == 'ja_JP':
     
     strings['properties.SceneProperties.show_filtered_folder_contents.name'] = "濾しているフォルダ内容を晒"
     strings['properties.SceneProperties.show_filtered_folder_contents.description'] = \
-        "たとえ内容を濾過に一致しなくても濾しているフォルダの内容を晒す"
+        "たとえ内容を濾過に一致しなくても濾しているフォルダの内容を晒します"
     
     strings['properties.SceneProperties.shape_key_limit_to_active.name'] = "アクティブシェイプだけを晒"
-    strings['properties.SceneProperties.shape_key_limit_to_active.description'] = "特定閾値以上値のシェイプキーだけ晒す"
+    strings['properties.SceneProperties.shape_key_limit_to_active.description'] = \
+        "特定閾値以上値のシェイプキーだけを晒します"
     
     strings['properties.SceneProperties.filter_active_threshold.name'] = "アクティブ閾値"
-    strings['properties.SceneProperties.filter_active_threshold.description'] = "この値以上のシェイプキーだけ晒します"
+    strings['properties.SceneProperties.filter_active_threshold.description'] = "この値以上のシェイプキーだけを晒します"
     
     strings['properties.SceneProperties.filter_active_below.name'] = "アクティブ閾値を逆"
-    strings['properties.SceneProperties.filter_active_below.description'] = "閾値未満の値だけ晒します"
+    strings['properties.SceneProperties.filter_active_below.description'] = "閾値未満の値だけを晒します"
