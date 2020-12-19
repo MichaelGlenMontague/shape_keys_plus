@@ -432,7 +432,7 @@ elif language == 'ja_JP':
     
     # shape_keys_plus/operators/driver_update.py
     strings['operators.DriverUpdate.bl_label'] = "ドライバを更新 (Update Driver)"
-    strings['operators.DriverUpdate.bl_description'] = "このドライバーを強引更新する"
+    strings['operators.DriverUpdate.bl_description'] = "このドライバを強引更新する"
     
     # shape_keys_plus/operators/folder_icon.py
     strings['operators.ActiveFolderIcon.bl_label'] = "アクティブフォルダのアイコンを改める (Set Active Folder Icon)"
