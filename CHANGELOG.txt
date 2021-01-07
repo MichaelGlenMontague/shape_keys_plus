@@ -1,3 +1,7 @@
+v2.0.1
+    - PATCH
+        • Fixed SystemError when using "New Shape From Mix".
+
 v2.0.0
     - MAJOR
         • The add-on now utilizes a robust tree hierarchy internally, so folders can be multi-selected.
