@@ -11,7 +11,7 @@ def is_folder(key):
 
 
 def is_selected(key):
-    return str(key.id_data.key_blocks.find(key)) in key.id_data.shape_keys_plus.selections
+    return str(key.id_data.key_blocks.find(key.name)) in key.id_data.shape_keys_plus.selections
 
 
 def get_selected_indices():
