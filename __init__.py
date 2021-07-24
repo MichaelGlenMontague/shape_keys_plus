@@ -224,8 +224,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                 buttons.prop(
                     data=item,
                     property='frame',
-                    text="",
-                    emboss=False)
+                    text="")
             elif index > 0:
                 vrow = buttons.row()
                 vrow.active = not selections or selections and selected
@@ -233,8 +232,7 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                 vrow.prop(
                     data=item,
                     property='value',
-                    text="",
-                    emboss=False)
+                    text="")
             
             buttons.prop(
                 data=item,
