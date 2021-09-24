@@ -11,8 +11,8 @@ from shape_keys_plus import properties
 bl_info = {
     "name": "Shape Keys+",
     "author": "Michael Glen Montague",
-    "version": (2, 0, 0),
-    "blender": (2, 83, 0),
+    "version": (2, 0, 2),
+    "blender": (2, 93, 0),
     "location": "Properties > Object Data > Shape Keys+",
     "description": "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning": "",
@@ -26,8 +26,8 @@ bl_info = {
 bl_info_en_US = {
     "name": "Shape Keys+",
     "author": "Michael Glen Montague",
-    "version": (2, 0, 0),
-    "blender": (2, 83, 0),
+    "version": (2, 0, 2),
+    "blender": (2, 93, 0),
     "location": "Properties > Object Data > Shape Keys+",
     "description": "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning": "",
@@ -38,8 +38,8 @@ bl_info_en_US = {
 bl_info_ja_JP = {
     "name": "シェイプキープラス (Shape Keys+)",
     "author": "Michael Glen Montague （マイケルグレンモンタギュー）",
-    "version": (2, 0, 0),
-    "blender": (2, 83, 0),
+    "version": (2, 0, 2),
+    "blender": (2, 93, 0),
     "location": "プロパティ ⇒ オブジェクトデータ ⇒ シェイプキープラス",
     "description": "シェイプキーを作成したり整理したり見せたりドライブしたりのための余分設定を入っているパネルを追加します。",
     "warning": "",
@@ -230,11 +230,16 @@ class MESH_UL_shape_keys_plus(bpy.types.UIList):
                 vrow = buttons.row()
                 vrow.active = not selections or selections and selected
                 vrow.scale_x = 0.66
-                vrow.prop(
-                    data=item,
-                    property='value',
-                    text="",
-                    emboss=False)
+                
+                if bpy.app.version < (2, 92):
+                    vrow.prop(data=item, property='value', text="", emboss=False)
+                else:
+                    if bpy.app.version >= (3, 0):
+                        vrow.emboss = 'NONE_OR_STATUS'
+                    elif bpy.app.version >= (2, 92):
+                        vrow.emboss = 'UI_EMBOSS_NONE_OR_STATUS'
+                    
+                    vrow.prop(data=item, property='value', text="")
             
             buttons.prop(
                 data=item,
