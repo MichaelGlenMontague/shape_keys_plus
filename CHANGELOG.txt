@@ -1,3 +1,7 @@
+v2.0.2
+    - PATCH
+        • Fixed driver emboss.
+
 v2.0.1
     - PATCH
         • Fixed SystemError when using "New Shape From Mix".
