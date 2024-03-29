@@ -1,6 +1,6 @@
 import bpy
 
-from shape_keys_plus import core
+from .. import core
 
 
 class MESH_MT_skp_shape_key_copy_context_menu(bpy.types.Menu):

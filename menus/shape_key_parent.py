@@ -1,7 +1,7 @@
 import bpy
 
-from shape_keys_plus import core
-from shape_keys_plus import memory
+from .. import core
+from .. import memory
 
 
 class OBJECT_MT_skp_shape_key_parent(bpy.types.Menu):

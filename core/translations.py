@@ -338,8 +338,8 @@ elif language == 'ja_JP':
     # Generic
     strings['Shape Keys+'] = "シェイプキープラス"
     strings['Folder'] = "フォルダー"
-    strings['True'] = "真"
-    strings['False'] = "偽"
+    strings['True'] = "YES"
+    strings['False'] = "NO"
     strings['Selected (%s)'] = "選択（%s）"
     strings['Selections'] = "選択肢"
     strings['Page'] = "ページ"

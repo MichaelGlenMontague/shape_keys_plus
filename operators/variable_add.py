@@ -1,6 +1,6 @@
 import bpy
 
-from shape_keys_plus import core
+from .. import core
 
 
 class DRIVER_OT_skp_variable_add(bpy.types.Operator):

@@ -1,6 +1,6 @@
 import bpy
 
-from shape_keys_plus import core
+from .. import core
 
 
 class OBJECT_OT_skp_active_folder_icon(bpy.types.Operator):

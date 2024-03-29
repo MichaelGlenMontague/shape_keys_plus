@@ -1,22 +1,22 @@
 import bpy
 import bl_ui
 
-from shape_keys_plus import core
-from shape_keys_plus import memory
-from shape_keys_plus import operators
-from shape_keys_plus import menus
-from shape_keys_plus import panels
-from shape_keys_plus import properties
+from . import core
+from . import memory
+from . import operators
+from . import menus
+from . import panels
+from . import properties
 
 bl_info = {
     "name": "Shape Keys+",
     "author": "Michael Glen Montague",
-    "version": (2, 0, 2),
+    "version": (2, 0, 3),
     "blender": (2, 93, 0),
     "location": "Properties > Object Data > Shape Keys+",
     "description": "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning": "",
-    "wiki_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/wiki",
+    "doc_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/wiki",
     "tracker_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/issues",
     "category": "Object"
 }
@@ -26,24 +26,24 @@ bl_info = {
 bl_info_en_US = {
     "name": "Shape Keys+",
     "author": "Michael Glen Montague",
-    "version": (2, 0, 2),
+    "version": (2, 0, 3),
     "blender": (2, 93, 0),
     "location": "Properties > Object Data > Shape Keys+",
     "description": "Adds a panel with extra options for creating, sorting, viewing, and driving shape keys.",
     "warning": "",
-    "wiki_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/wiki",
+    "doc_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/wiki",
     "tracker_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/issues",
     "category": "Object"
 }
 bl_info_ja_JP = {
     "name": "シェイプキープラス (Shape Keys+)",
     "author": "Michael Glen Montague （マイケルグレンモンタギュー）",
-    "version": (2, 0, 2),
+    "version": (2, 0, 3),
     "blender": (2, 93, 0),
     "location": "プロパティ ⇒ オブジェクトデータ ⇒ シェイプキープラス",
     "description": "シェイプキーを作成したり整理したり見せたりドライブしたりのための余分設定を入っているパネルを追加します。",
     "warning": "",
-    "wiki_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/wiki",
+    "doc_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/wiki",
     "tracker_url": "https://github.com/MichaelGlenMontague/shape_keys_plus/issues",
     "category": "Object"
 }
@@ -464,7 +464,7 @@ def register():
     bpy.types.Key.shape_keys_plus = bpy.props.PointerProperty(
         type=properties.KeyProperties, name=core.strings['Shape Keys+'])
     
-    core.preferences = bpy.context.preferences.addons['shape_keys_plus'].preferences
+    core.preferences = bpy.context.preferences.addons[__name__].preferences
     
     default_panel_exists = hasattr(bpy.types, 'DATA_PT_shape_keys')
     

@@ -1,6 +1,6 @@
 import bpy
 
-from shape_keys_plus import core
+from .. import core
 
 
 class DATA_PT_skp_copy_customization(bpy.types.Panel):
