@@ -1,7 +1,7 @@
 import bpy
 
-from shape_keys_plus import core
-from shape_keys_plus import memory
+from .. import core
+from .. import memory
 
 
 class DATA_PT_shape_keys_plus(bpy.types.Panel):

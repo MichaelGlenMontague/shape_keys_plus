@@ -2,8 +2,8 @@ import bpy
 
 from bpy.app.translations import pgettext_data
 
-from shape_keys_plus import core
-from shape_keys_plus import memory
+from .. import core
+from .. import memory
 
 
 def is_folder(key):

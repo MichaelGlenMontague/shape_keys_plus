@@ -1,6 +1,6 @@
 import bpy
 
-from shape_keys_plus import core
+from .. import core
 
 
 class OBJECT_OT_skp_shape_key_select(bpy.types.Operator):

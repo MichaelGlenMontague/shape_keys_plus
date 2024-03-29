@@ -1,3 +1,7 @@
+v2.0.3
+    - PATCH
+        • Allowed add-on to be installed directly from a git clone.
+
 v2.0.2
     - PATCH
         • Fixed driver emboss.

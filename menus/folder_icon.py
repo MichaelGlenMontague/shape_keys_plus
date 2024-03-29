@@ -1,6 +1,6 @@
 import bpy
 
-from shape_keys_plus import core
+from .. import core
 
 
 def draw_menu(layout, context, category=None):
