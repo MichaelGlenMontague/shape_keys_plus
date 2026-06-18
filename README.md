@@ -28,8 +28,3 @@ Click-holding or click-dragging on one of the **Add** / **Copy** / **Remove** si
 
 - **Manual Translation**
 > All UI elements are set up for manual translation, with the two current languages being English and Japanese. The language can be configured at any time simply by changing the language property in the shape_keys_plus/config.ini file and restarting Blender.
-
-# Other
-For ***Vertex Groups***, [the ***Vertex Codex*** add-on can be purchased on Gumroad.](https://michaelglenmontague.gumroad.com/l/vertex_codex) 
-
-While similar in appearance, ***Vertex Codex*** is a separate add-on and is not connected to ***Shape Keys+***.
